@@ -20,8 +20,8 @@ namespace pcv1 {
  */
 cv::Vec3f eucl2hom_point_2D(const cv::Vec2f& p)
 {
-    // TO DO !!!
-    return cv::Vec3f();
+
+    return cv::Vec3f(p[0],p[1],1);
 }
 
 /**
@@ -32,7 +32,7 @@ cv::Vec3f eucl2hom_point_2D(const cv::Vec2f& p)
 cv::Vec2f hom2eucl_point_2D(const cv::Vec3f& p)
 {
     // TO DO !!!
-    return cv::Vec2f();
+    return cv::Vec2f(p[0]/p[2],p[1]/p[2]);
 }
     
     
@@ -44,8 +44,12 @@ cv::Vec2f hom2eucl_point_2D(const cv::Vec3f& p)
 */
 cv::Vec3f getConnectingLine_2D(const cv::Vec3f& p1, const cv::Vec3f& p2)
 {
-    // TO DO !!!
-    return cv::Vec3f();
+    //line in homogeneous coordinates is given by cross product of its point coordintates
+
+
+    return cv::Vec3f(p1[1]*p2[2]-p1[2]*p2[1],
+                     p1[2]*p2[0]-p1[0]*p2[2],
+                     p1[0]*p2[1]-p1[1]*p2[0]);
 }
 
 /**
@@ -56,8 +60,9 @@ cv::Vec3f getConnectingLine_2D(const cv::Vec3f& p1, const cv::Vec3f& p2)
  */
 cv::Matx33f getTranslationMatrix_2D(float dx, float dy)
 {
-    // TO DO !!!
-    return cv::Matx33f();
+    return cv::Matx33f(1,0,dx,
+                       0,1,dy,
+                       0,0,1);
 }
 
 /**
@@ -67,8 +72,10 @@ cv::Matx33f getTranslationMatrix_2D(float dx, float dy)
  */
 cv::Matx33f getRotationMatrix_2D(float phi)
 {
-    // TO DO !!!
-    return cv::Matx33f();
+    float phi_rad = 2*M_PI*phi/360;
+    return cv::Matx33f(cos(phi_rad),-sin(phi_rad),0,
+                       sin(phi_rad),cos(phi_rad),0,
+                       0,0,1);
 }
 
 /**
@@ -78,8 +85,9 @@ cv::Matx33f getRotationMatrix_2D(float phi)
  */
 cv::Matx33f getScalingMatrix_2D(float lambda)
 {
-    // TO DO !!!
-    return cv::Matx33f();
+    return cv::Matx33f(lambda,0,0,
+                       0,lambda,0,
+                       0,0,1);
 }
 
 /**
