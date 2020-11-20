@@ -117,8 +117,8 @@ cv::Matx33f getH_2D(const cv::Matx33f& T, const cv::Matx33f& R, const cv::Matx33
    int l, m, n;
     const cv::Matx33f& H;
 
-    for (l=0; l < (sizeof(TR)/ sizeof(TR[0])); l++){  //Number of rows in T
-        for (m=0; m < (sizeof(S[0])/ sizeof(S[0][0])); l++){ //Number of cols in R
+    for (l=0; l < (sizeof(TR)/ sizeof(TR[0])); l++){  //Number of rows in TR
+        for (m=0; m < (sizeof(S[0])/ sizeof(S[0][0])); l++){ //Number of cols in S
         H[l][m] = 0;
             for(n=0; n<sizeof(S); n++){
             H[l][m] += TS[l][n] * S[n][m];
