@@ -103,9 +103,9 @@ cv::Matx33f getH_2D(const cv::Matx33f& T, const cv::Matx33f& R, const cv::Matx33
     // TO DO !!!
 
     int i, j, k;
-    const cv::Matx33f& TR;
+    cv::Matx33f TR;
 
-    for (i=0; i < (sizeof(T)/ sizeof(T[0])); i++){  //Number of rows in T
+    for (i=0; i < (sizeof(T)/ sizeof(T[0])); i++){  //Number of rows in T - but not possible with a const variable
         for (j=0; j < (sizeof(R[0])/ sizeof(R[0][0])); j++){ //Number of cols in R
         TR[i][j] = 0;
             for(k=0; k<sizeof(TR); k++){
@@ -114,19 +114,17 @@ cv::Matx33f getH_2D(const cv::Matx33f& T, const cv::Matx33f& R, const cv::Matx33
         }
     }
 
-   int l, m, n;
-    const cv::Matx33f& H;
+    int l, m, n;
+    cv::Matx33f H;
 
     for (l=0; l < (sizeof(TR)/ sizeof(TR[0])); l++){  //Number of rows in TR
         for (m=0; m < (sizeof(S[0])/ sizeof(S[0][0])); l++){ //Number of cols in S
         H[l][m] = 0;
             for(n=0; n<sizeof(S); n++){
-            H[l][m] += TS[l][n] * S[n][m];
+            H[l][m] += TR[l][n] * S[n][m];
             }
         }
-    }
-}
-    
+    } 
     return cv::Matx33f(H);
 }
 
