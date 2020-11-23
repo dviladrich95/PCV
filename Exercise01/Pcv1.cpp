@@ -175,7 +175,7 @@ void run(const std::string &fname){
     cv::Mat inputImage;
     
     // TO DO !!!
-    // inputimage = ???
+    inputImage = cv::imread(fname,cv::IMREAD_COLOR);
     
     if (!inputImage.data){
         std::cout << "ERROR: image could not be loaded from " << fname << std::endl;
@@ -195,7 +195,8 @@ void run(const std::string &fname){
 
     // same points in homogeneous coordinates
     cv::Vec3f v1, v2;
-    // TO DO !!!
+    v1[0]=x[0],v1[1]=x[1],v1[2]=1.0f;
+    v2[0]=y[0],v2[1]=y[1],v2[2]=1.0f;
     // define v1 as homogeneous version of x
     // define v2 as homogeneous version of y
     
