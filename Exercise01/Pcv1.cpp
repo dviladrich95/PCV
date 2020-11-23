@@ -100,34 +100,9 @@ cv::Matx33f getScalingMatrix_2D(float lambda)
  */
 cv::Matx33f getH_2D(const cv::Matx33f& T, const cv::Matx33f& R, const cv::Matx33f& S)
 {
-    // TO DO !!!
-
-    int i, j, k;
-    cv::Matx33f TR;
-
-    for (i=0; i < (sizeof(T)/ sizeof(T[0])); i++){  //Number of rows in T - but not possible with a const variable
-        for (j=0; j < (sizeof(R[0])/ sizeof(R[0][0])); j++){ //Number of cols in R
-        TR[i][j] = 0;
-            for(k=0; k<sizeof(TR); k++){
-            TR[i][j] += T[i][k] * R[k][j];
-            }
-        }
-    }
-
-    int l, m, n;
-    cv::Matx33f H;
-
-    for (l=0; l < (sizeof(TR)/ sizeof(TR[0])); l++){  //Number of rows in TR
-        for (m=0; m < (sizeof(S[0])/ sizeof(S[0][0])); l++){ //Number of cols in S
-        H[l][m] = 0;
-            for(n=0; n<sizeof(S); n++){
-            H[l][m] += TR[l][n] * S[n][m];
-            }
-        }
-    } 
+    cv::Matx33f H=R*S*T;
     return cv::Matx33f(H);
-}
-
+    }
 /**
  * @brief Applies a 2D transformation to an array of points or lines
  * @param H Matrix representing the transformation
@@ -153,10 +128,14 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
 
     switch (type) {
         case GEOM_TYPE_POINT: {
-            // TO DO !!!
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H*geomObjects[i]);
+            }
         } break;
         case GEOM_TYPE_LINE: {
-            // TO DO !!!
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H.inv().t()*geomObjects[i]);
+            }
         } break;
         default:
             throw std::runtime_error("Unhandled geometry type!");
@@ -173,7 +152,10 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 bool isPointOnLine_2D(const cv::Vec3f& point, const cv::Vec3f& line, float eps)
 {
-    // TO DO !!!
+    float d=std::abs(point.dot(line));
+    if(d<eps){
+        return true;
+    }
     return false;
 }
 
