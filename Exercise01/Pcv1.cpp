@@ -31,7 +31,6 @@ cv::Vec3f eucl2hom_point_2D(const cv::Vec2f& p)
  */
 cv::Vec2f hom2eucl_point_2D(const cv::Vec3f& p)
 {
-    // TO DO !!!
     return cv::Vec2f(p[0]/p[2],p[1]/p[2]);
 }
     
@@ -124,8 +123,6 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
      */
     /**************************************************************************/
 
-    // TO DO !!!
-
     switch (type) {
         case GEOM_TYPE_POINT: {
             for(int i=0;i<geomObjects.size();i++){
@@ -152,6 +149,8 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 bool isPointOnLine_2D(const cv::Vec3f& point, const cv::Vec3f& line, float eps)
 {
+    cv::Vec3f point_norm = point/point[2]; // not a real point if 3rd component is 0
+    cv::Vec3f line_norm = line/std::sqrt(line[0]*line[0]+line[1]*line[1]); //not a real line if norm is 0
     float d=std::abs(point.dot(line));
     if(d<eps){
         return true;
@@ -173,10 +172,9 @@ void run(const std::string &fname){
     // load image as gray-scale, path in argv[1]
     std::cout << "Load image: start" << std::endl;
     cv::Mat inputImage;
-    
-    // TO DO !!!
+
     inputImage = cv::imread(fname,cv::IMREAD_COLOR);
-    
+
     if (!inputImage.data){
         std::cout << "ERROR: image could not be loaded from " << fname << std::endl;
         std::cout << "Press enter to continue..." << std::endl;
