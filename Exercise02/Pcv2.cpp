@@ -18,14 +18,22 @@ namespace pcv2 {
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
 {
-    // TO DO !!!
-    return cv::Matx33f::eye();
-}
+/**
+    cv::Vec3f mean_point;
+    cv::reduce(points, mean_point, 1, cv::REDUCE_AVG);
+    vector<double> mean_distance=cv::norm(points);
+
+    cv::Matx33f condition_matrix=cv::Matx33f(1,0,mean_point[0],
+                                             0,1,mean_point[1],
+                                             0,0,1);
+    return condition_matrix,
+*/
+ }
 
 
 /**
  * @brief define the design matrix as needed to compute 2D-homography
- * @param conditioned_base first set of conditioned points x' --> x' = H * x
+ * @param co// TO DO !!!nditioned_base first set of conditioned points x' --> x' = H * x
  * @param conditioned_attach second set of conditioned points x --> x' = H * x
  * @returns the design matrix to be computed
  */
