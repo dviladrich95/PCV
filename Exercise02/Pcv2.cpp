@@ -6,8 +6,8 @@
 // Description : 
 //============================================================================
 
-#include "Pcv2.h"
 
+#include "Pcv2.h"
 namespace pcv2 {
 
 
@@ -18,16 +18,33 @@ namespace pcv2 {
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
 {
-/**
-    cv::Vec3f mean_point;
-    cv::reduce(points, mean_point, 1, cv::REDUCE_AVG);
-    vector<double> mean_distance=cv::norm(points);
+    float num_points=points.size();
+    cv::Vec2f sum_points(0.0,0.0);
+    cv::Vec2f mean_point(0.0,0.0);
+    double sum_sx=0.0;
+    double sum_sy=0.0;
+    double sx=0.0;
+    double sy=0.0;
 
-    cv::Matx33f condition_matrix=cv::Matx33f(1,0,mean_point[0],
-                                             0,1,mean_point[1],
+    for(const auto & point : points){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        sum_points=sum_points+point_eucl;
+    }
+    mean_point=sum_points/float(points.size());
+
+    for(const auto & point : points){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        cv::Vec2f point_eucl_new=point_eucl-mean_point;
+
+        sum_sx =sum_sx+cv::abs(point_eucl_new[0]);
+        sum_sy=sum_sy+cv::abs(point_eucl_new[1]);
+    }
+    sx=sum_sx/float(points.size());
+    sy=sum_sy/float(points.size());
+    cv::Matx33f condition_matrix=cv::Matx33f(1.0/sx,0,-mean_point[0]/sx,
+                                             0,1.0/sx,-mean_point[1]/sy,
                                              0,0,1);
-    return condition_matrix,
-*/
+    return condition_matrix;
  }
 
 
@@ -93,34 +110,36 @@ cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<c
  * @param type The type of the geometric objects, point or line. All are the same type.
  * @returns Array of transformed objects.
  */
-std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, const cv::Matx33f &H, GeometryType type)
-{
-    std::vector<cv::Vec3f> result;
-    
-    /******* Small std::vector cheat sheet ************************************/
-    /*
-     *   Number of elements in vector:                 a.size()
-     *   Access i-th element (reading or writing):     a[i]
-     *   Resize array:                                 a.resize(count);
-     *   Append an element to an array:                a.push_back(element);
-     *     \-> preallocate memory for e.g. push_back:  a.reserve(count);
-     */
-    /**************************************************************************/
+    std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, const cv::Matx33f &H, GeometryType type)
+    {
+        std::vector<cv::Vec3f> result;
 
-    // TO DO !!!
+        /******* Small std::vector cheat sheet ************************************/
+        /*
+         *   Number of elements in vector:                 a.size()
+         *   Access i-th element (reading or writing):     a[i]
+         *   Resize array:                                 a.resize(count);
+         *   Append an element to an array:                a.push_back(element);
+         *     \-> preallocate memory for e.g. push_back:  a.reserve(count);
+         */
+        /**************************************************************************/
 
-    switch (type) {
-        case GEOM_TYPE_POINT: {
-            // TO DO !!!
-        } break;
-        case GEOM_TYPE_LINE: {
-            // TO DO !!!
-        } break;
-        default:
-            throw std::runtime_error("Unhandled geometry type!");
+        switch (type) {
+            case GEOM_TYPE_POINT: {
+                for(int i=0;i<geomObjects.size();i++){
+                    result.push_back(H*geomObjects[i]);
+                }
+            } break;
+            case GEOM_TYPE_LINE: {
+                for(int i=0;i<geomObjects.size();i++){
+                    result.push_back(H.inv().t()*geomObjects[i]);
+                }
+            } break;
+            default:
+                throw std::runtime_error("Unhandled geometry type!");
+        }
+        return result;
     }
-    return result;
-}
 
 
 /**
@@ -130,8 +149,8 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 cv::Vec3f eucl2hom_point_2D(const cv::Vec2f& p)
 {
-    // TO DO !!!
-    return cv::Vec3f();
+    return cv::Vec3f(p[0],p[1],1);
 }
+
 
 }
