@@ -56,8 +56,37 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
  */
 cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &conditioned_base, const std::vector<cv::Vec3f> &conditioned_attach)
 {
-    // TO DO !!!
-    return cv::Mat_<float>::zeros(8, 9);
+    cv::Mat_<float> design_matrix=cv::Mat_<float>::zeros(int(conditioned_base.size()), 9);
+    cv::Mat_<float> line1=cv::Mat_<float>::zeros(1, 9);
+    cv::Mat_<float> line2=cv::Mat_<float>::zeros(1, 9);
+    std::vector<cv::Mat_<float>> design_matrix_block;
+    for(int i = 0;i<conditioned_base.size();i++){
+        cv::Vec3f x_i = conditioned_base[i];
+        cv::Vec3f x_f = conditioned_attach[i];
+        std::vector<cv::Vec3f> line1_list={-conditioned_base[i][2]*conditioned_attach[i],
+                                           cv::Vec3f(0.0,0.0,0.0),
+                                           conditioned_base[i][0]*conditioned_attach[i]};
+        std::vector<cv::Vec3f> line2_list={cv::Vec3f(0.0,0.0,0.0),
+                                           -conditioned_base[i][2]*conditioned_attach[i],
+                                           conditioned_base[i][1]*conditioned_attach[i]};
+
+
+        cv::hconcat(line1_list,line1);
+        cv::hconcat(line2_list,line2);
+        //line1.t();
+        //line2.t();
+        design_matrix_block.push_back(line1);
+        design_matrix_block.push_back(line2);
+        cv::vconcat(line1,design_matrix);
+        cv::vconcat(line2,design_matrix);
+
+    }
+    std::cout << design_matrix;
+    std::cout << std::endl;
+    //cv::vconcat(design_matrix_block,design_matrix);
+    std::cout << "design matrix" << design_matrix;
+    return design_matrix;
+
 }
 
 
