@@ -56,6 +56,21 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
  */
 cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &conditioned_base, const std::vector<cv::Vec3f> &conditioned_attach)
 {
+    
+    cv::Mat_<float> design_matrix=(cv::Mat_<float>(8, 9) <<
+    -conditioned_base[0][2]*conditioned_attach[0][0], -conditioned_base[0][2]*conditioned_attach[0][1], -conditioned_base[0][2]*conditioned_attach[0][2], 0, 0, 0, conditioned_base[0][0]*conditioned_attach[0][0], conditioned_base[0][0]*conditioned_attach[0][1], conditioned_base[0][0]*conditioned_attach[0][2],
+    0, 0, 0, -conditioned_base[0][2]*conditioned_attach[0][0], -conditioned_base[0][2]*conditioned_attach[0][1], -conditioned_base[0][2]*conditioned_attach[0][2], conditioned_base[0][1]*conditioned_attach[0][0], conditioned_base[0][1]*conditioned_attach[0][1], conditioned_base[0][1]*conditioned_attach[0][2],
+    -conditioned_base[1][2]*conditioned_attach[1][0], -conditioned_base[1][2]*conditioned_attach[1][1], -conditioned_base[1][2]*conditioned_attach[1][2], 0, 0, 0, conditioned_base[1][0]*conditioned_attach[1][0], conditioned_base[1][0]*conditioned_attach[1][1], conditioned_base[1][0]*conditioned_attach[1][2],
+    0, 0, 0, -conditioned_base[1][2]*conditioned_attach[1][0], -conditioned_base[1][2]*conditioned_attach[1][1], -conditioned_base[1][2]*conditioned_attach[1][2], conditioned_base[1][1]*conditioned_attach[1][0], conditioned_base[1][1]*conditioned_attach[1][1], conditioned_base[1][1]*conditioned_attach[1][2],
+    -conditioned_base[2][2]*conditioned_attach[2][0], -conditioned_base[2][2]*conditioned_attach[2][1], -conditioned_base[2][2]*conditioned_attach[2][2], 0, 0, 0, conditioned_base[2][0]*conditioned_attach[2][0], conditioned_base[2][0]*conditioned_attach[2][1], conditioned_base[2][0]*conditioned_attach[2][2],
+    0, 0, 0, -conditioned_base[2][2]*conditioned_attach[2][0], -conditioned_base[2][2]*conditioned_attach[2][1], -conditioned_base[2][2]*conditioned_attach[2][2], conditioned_base[2][1]*conditioned_attach[2][0], conditioned_base[2][1]*conditioned_attach[2][1], conditioned_base[2][1]*conditioned_attach[2][2],
+    -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], 0, 0, 0, conditioned_base[3][0]*conditioned_attach[3][0], conditioned_base[3][0]*conditioned_attach[3][1], conditioned_base[3][0]*conditioned_attach[3][2],
+    0, 0, 0, -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], conditioned_base[3][1]*conditioned_attach[3][0], conditioned_base[3][1]*conditioned_attach[3][1], conditioned_base[3][1]*conditioned_attach[3][2]);
+
+    std::cout << "design matrix" << design_matrix;
+    return design_matrix;
+    
+    /**
     cv::Mat_<float> design_matrix=cv::Mat_<float>::zeros(int(conditioned_base.size()), 9);
     cv::Mat_<float> line1=cv::Mat_<float>::zeros(1, 9);
     cv::Mat_<float> line2=cv::Mat_<float>::zeros(1, 9);
@@ -84,8 +99,8 @@ cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &condi
     std::cout << design_matrix;
     std::cout << std::endl;
     //cv::vconcat(design_matrix_block,design_matrix);
-    std::cout << "design matrix" << design_matrix;
-    return design_matrix;
+    */ 
+
 
 }
 
