@@ -124,15 +124,15 @@ cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
 
     cv::Mat H_cond = cv::Mat_<float>::zeros(3,3);
 
-    H_cond.at<float>(0,0) = h.at<float>(0,1);
-    H_cond.at<float>(0,1) = h.at<float>(0,2);
-    H_cond.at<float>(0,2) = h.at<float>(0,3);
-    H_cond.at<float>(1,0) = h.at<float>(0,4);
-    H_cond.at<float>(1,1) = h.at<float>(0,5);
-    H_cond.at<float>(1,2) = h.at<float>(0,6);
-    H_cond.at<float>(2,0) = h.at<float>(0,7);
-    H_cond.at<float>(2,1) = h.at<float>(0,8);
-    H_cond.at<float>(2,2) = h.at<float>(0,9);
+    H_cond.at<float>(0,0) = h.at<float>(0,0);
+    H_cond.at<float>(0,1) = h.at<float>(0,1);
+    H_cond.at<float>(0,2) = h.at<float>(0,2);
+    H_cond.at<float>(1,0) = h.at<float>(0,3);
+    H_cond.at<float>(1,1) = h.at<float>(0,4);
+    H_cond.at<float>(1,2) = h.at<float>(0,5);
+    H_cond.at<float>(2,0) = h.at<float>(0,6);
+    H_cond.at<float>(2,1) = h.at<float>(0,7);
+    H_cond.at<float>(2,2) = h.at<float>(0,8);
 
     return H_cond;
 
