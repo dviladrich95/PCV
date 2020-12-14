@@ -67,7 +67,7 @@ cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &condi
     -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], 0, 0, 0, conditioned_base[3][0]*conditioned_attach[3][0], conditioned_base[3][0]*conditioned_attach[3][1], conditioned_base[3][0]*conditioned_attach[3][2],
     0, 0, 0, -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], conditioned_base[3][1]*conditioned_attach[3][0], conditioned_base[3][1]*conditioned_attach[3][1], conditioned_base[3][1]*conditioned_attach[3][2]);
 
-    std::cout << "design matrix" << design_matrix;
+    //std::cout << "design matrix" << design_matrix;
     return design_matrix;
     
     /**
