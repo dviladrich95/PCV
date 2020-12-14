@@ -147,8 +147,9 @@ cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
  */
 cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33f &T_attach, const cv::Matx33f &H) 
 {
-    // TO DO !!!
-    return H;
+    cv::Matx33f H_decon = T_base.inv() * H * T_attach;
+
+    return H_decon;
 }
 
 
