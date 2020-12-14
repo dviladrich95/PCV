@@ -161,7 +161,6 @@ cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33
  */
 cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<cv::Vec3f> &attach)
 {
-    // TO DO !!!
      // TO DO !!!
     cv::Mat baseM =cv::Mat::eye(3,3, CV_32FC1);
     for (float i = 0; i < base.size(); i++) {
