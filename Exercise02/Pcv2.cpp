@@ -113,8 +113,28 @@ cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &condi
  */
 cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
 {
-    // TO DO !!!
-    return cv::Matx33f::eye();
+    
+    cv::SVD svd(A.t()*A, cv::SVD::FULL_UV);
+    //std::cout << svd.w;
+    //std::cout << svd.vt;
+    //std::cout << svd.vt.row(8);
+
+    cv::Mat h = cv::Mat(svd.vt.row(8)); // do we need to multiply by smallest svd.w here?
+    //std::cout << h;
+
+    cv::Mat H = cv::Mat_<float>::zeros(3,3);
+
+    H.at<float>(0,0) = h.at<float>(0,1);
+    H.at<float>(0,1) = h.at<float>(0,2);
+    H.at<float>(0,2) = h.at<float>(0,3);
+    H.at<float>(1,0) = h.at<float>(0,4);
+    H.at<float>(1,1) = h.at<float>(0,5);
+    H.at<float>(1,2) = h.at<float>(0,6);
+    H.at<float>(2,0) = h.at<float>(0,7);
+    H.at<float>(2,1) = h.at<float>(0,8);
+    H.at<float>(2,2) = h.at<float>(0,9);
+
+    return H;
 }
 
 
