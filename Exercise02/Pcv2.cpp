@@ -161,53 +161,25 @@ cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33
  */
 cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<cv::Vec3f> &attach)
 {
-     // TO DO !!!
-    cv::Mat baseM =cv::Mat::eye(3,3, CV_32FC1);
-    for (float i = 0; i < base.size(); i++) {
-        baseM.at<float>(0,0)=base[i][0];
-        baseM.at<float>(1,0)=base[i][1];
-        baseM.at<float>(2,0)=base[i][2];
-   
-    };
+        cv::Matx33f base_cond = getCondition2D(base);
+        //std::cout << base_cond;
 
-/*
-   for (float i = 0; i < base.size(); i++) {
-    baseM.at<float>(i,0)=base[i][0];
-    baseM.at<float>(i,0)=base[i][1];
-    baseM.at<float>(i,0)=base[i][2];
-    };
-*/
+        cv::Matx33f attach_cond = getCondition2D(attach);
+        //std::cout << attach_cond;
 
-    cv::Mat attachM =cv::Mat::eye(3,3, CV_32FC1);
-    for (float i = 0; i < attach.size(); i++) {
-        attachM.at<float>(0,0)=attach[i][0];
-        attachM.at<float>(1,0)=attach[i][1];
-        attachM.at<float>(2,0)=attach[i][2];
-    
-    };
+        std::vector<cv::Vec3f>(c_baseMAT);
+        std::vector<cv::Vec3f>c_attachMAT;
+        c_baseMAT = applyH_2D(base, base_cond, GEOM_TYPE_POINT);
+        c_attachMAT = applyH_2D(attach, attach_cond, GEOM_TYPE_POINT);
 
-//cv::Mat baseM = cv::Mat::eye(3,3, CV_32FC1);
-//cv::Mat attachM = cv::Mat::eye(3,3, CV_32FC1);
-    std::vector<cv::Vec3f>(c_baseMAT);
-    std::vector<cv::Vec3f>c_attachMAT;
-    cv::Mat DMA= cv::Mat::eye(8,9,CV_32FC1);
-    cv::Mat dlt= cv::Mat::eye(3,3,CV_32FC1);
-    cv::Mat Hom= cv::Mat::eye(3,3,CV_32FC1);
+        cv::Mat_<float> DesignMat = getDesignMatrix_homography2D(c_baseMAT, c_attachMAT);
+        //std::cout << DesignMat;
 
-    baseM = getCondition2D(base)*baseM;
-    attachM = getCondition2D(attach)*attachM;
-    std::cout<<"    base M   "<<baseM<<std::endl<<std::endl;
-    std::cout<<"  attach M   "<<attachM<<std::endl;
-    c_baseMAT = applyH_2D(base, baseM, GEOM_TYPE_POINT);
-    c_attachMAT = applyH_2D(attach, attachM, GEOM_TYPE_POINT);
+        cv::Matx33f dlt = solve_dlt_homography2D(DesignMat);
 
-    DMA = getDesignMatrix_homography2D(c_baseMAT, c_attachMAT);
+        cv::Matx33f Hom = decondition_homography2D(base_cond, attach_cond, dlt);
 
-    dlt = solve_dlt_homography2D(DMA)*dlt;
-
-    Hom = decondition_homography2D(baseM, attachM, dlt)*Hom;
-
-    return Hom;
+        return Hom;
     
 }
 
