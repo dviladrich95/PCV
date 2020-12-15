@@ -113,11 +113,13 @@ cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &condi
  */
 cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
 {
-    
-    cv::SVD svd(A.t()*A, cv::SVD::FULL_UV);
+    cv::Mat_<float> zero_vector = cv::Mat_<float>::zeros(1,9);
+    cv::Mat_<float> A_ext = A;
+    cv::vconcat(A,zero_vector);
+    cv::SVD svd(A_ext.t()*A_ext, cv::SVD::FULL_UV);
     //std::cout << svd.w;
     //std::cout << svd.vt;
-    //std::cout << svd.vt.row(8);
+    std::cout << svd.vt.row(8);
 
     cv::Mat h = cv::Mat(svd.vt.row(8)); // do we need to multiply by smallest svd.w here?
     //std::cout << h;
