@@ -42,7 +42,7 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
     sx=sum_sx/float(points.size());
     sy=sum_sy/float(points.size());
     cv::Matx33f condition_matrix=cv::Matx33f(1.0/sx,0,-mean_point[0]/sx,
-                                             0,1.0/sx,-mean_point[1]/sy,
+                                             0,1.0/sy,-mean_point[1]/sy,
                                              0,0,1);
     return condition_matrix;
  }
@@ -149,6 +149,15 @@ cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
  */
 cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33f &T_attach, const cv::Matx33f &H) 
 {
+    float sx= T_base(0,0);
+    float sy= T_base(1,1);
+    float tx= T_base(2,0);
+    float ty= T_base(2,1);
+
+
+    cv::Matx33f T_base_inv= cv::Matx33f(sx,0,-tx*sx,
+                                        0,sy,-ty*sy,
+                                        0,0,1);
     cv::Matx33f H_decon = T_base.inv() * H * T_attach;
 
     return H_decon;
