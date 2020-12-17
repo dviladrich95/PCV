@@ -151,14 +151,15 @@ cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33
 {
     float sx= T_base(0,0);
     float sy= T_base(1,1);
-    float tx= T_base(2,0);
-    float ty= T_base(2,1);
+    float tx= T_base(0,2);
+    float ty= T_base(1,2);
 
 
-    cv::Matx33f T_base_inv= cv::Matx33f(sx,0,-tx*sx,
-                                        0,sy,-ty*sy,
+    cv::Matx33f T_base_inv= cv::Matx33f(1/sx,0,-tx/sx,
+                                        0,1/sy,-ty/sy,
                                         0,0,1);
     cv::Matx33f H_decon = T_base.inv() * H * T_attach;
+
 
     return H_decon;
 }
