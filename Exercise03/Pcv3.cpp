@@ -17,8 +17,33 @@ namespace pcv3 {
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
 {
-    // TO DO !!!
-    return cv::Matx33f::eye();
+    float num_points=points.size();
+    cv::Vec2f sum_points(0.0,0.0);
+    cv::Vec2f mean_point(0.0,0.0);
+    double sum_sx=0.0;
+    double sum_sy=0.0;
+    double sx=0.0;
+    double sy=0.0;
+
+    for(const auto & point : points){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        sum_points=sum_points+point_eucl;
+    }
+    mean_point=sum_points/float(points.size());
+
+    for(const auto & point : points){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        cv::Vec2f point_eucl_new=point_eucl-mean_point;
+
+        sum_sx =sum_sx+cv::abs(point_eucl_new[0]);
+        sum_sy=sum_sy+cv::abs(point_eucl_new[1]);
+    }
+    sx=sum_sx/float(points.size());
+    sy=sum_sy/float(points.size());
+    cv::Matx33f condition_matrix2D=cv::Matx33f(1.0/sx,0,-mean_point[0]/sx,
+                                             0,1.0/sy,-mean_point[1]/sy,
+                                             0,0,1);
+    return condition_matrix2D;
 }
 
 /**
@@ -28,8 +53,42 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
  */
 cv::Matx44f getCondition3D(const std::vector<cv::Vec4f> &points)
 {
-    // TO DO !!!
-    return cv::Matx44f::eye();
+    float num_points=points.size();
+    cv::Vec3f sum_points(0.0,0.0,0.0);
+    cv::Vec3f mean_point(0.0,0.0,0.0);
+    double sum_sx=0.0;
+    double sum_sy=0.0;
+    double sum_sz=0.0;
+    double sx=0.0;
+    double sy=0.0;
+    double sz=0.0;
+
+    for(const auto & point : points){
+        cv::Vec3f point_eucl=cv::Vec3f(point[0]/point[3],
+                                       point[1]/point[3],
+                                       point[2]/point[3]);
+        sum_points=sum_points+point_eucl;
+    }
+    mean_point=sum_points/float(points.size());
+
+    for(const auto & point : points){
+        cv::Vec3f point_eucl=cv::Vec3f(point[0]/point[3],
+                                       point[1]/point[3],
+                                       point[2]/point[3]);
+        cv::Vec3f point_eucl_new=point_eucl-mean_point;
+
+        sum_sx =sum_sx+cv::abs(point_eucl_new[0]);
+        sum_sy=sum_sy+cv::abs(point_eucl_new[1]);
+        sum_sz=sum_sz+cv::abs(point_eucl_new[2]);
+    }
+    sx=sum_sx/float(points.size());
+    sy=sum_sy/float(points.size());
+    sz=sum_sz/float(points.size());
+    cv::Matx44f condition_matrix3D=cv::Matx44f(1.0/sx,0,0,-mean_point[0]/sx,
+                                             0,1.0/sy,0,-mean_point[1]/sy,
+                                             0,0,1.0/sz,-mean_point[2]/sz,
+                                             0,0,0,1);
+    return condition_matrix3D;
 }
 
 /**
@@ -42,7 +101,7 @@ cv::Matx44f getCondition3D(const std::vector<cv::Vec4f> &points)
 std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, const cv::Matx33f &H, GeometryType type)
 {
     std::vector<cv::Vec3f> result;
-    
+
     /******* Small std::vector cheat sheet ************************************/
     /*
      *   Number of elements in vector:                 a.size()
@@ -53,14 +112,16 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
      */
     /**************************************************************************/
 
-    // TO DO !!!
-
     switch (type) {
         case GEOM_TYPE_POINT: {
-            // TO DO !!!
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H*geomObjects[i]);
+            }
         } break;
         case GEOM_TYPE_LINE: {
-            // TO DO !!!
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H.inv().t()*geomObjects[i]);
+            }
         } break;
         default:
             throw std::runtime_error("Unhandled geometry type!");
@@ -78,19 +139,9 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
 std::vector<cv::Vec4f> applyH_3D_points(const std::vector<cv::Vec4f>& points, const cv::Matx44f &H)
 {
     std::vector<cv::Vec4f> result;
-    
-    /******* Small std::vector cheat sheet ************************************/
-    /*
-     *   Number of elements in vector:                 a.size()
-     *   Access i-th element (reading or writing):     a[i]
-     *   Resize array:                                 a.resize(count);
-     *   Append an element to an array:                a.push_back(element);
-     *     \-> preallocate memory for e.g. push_back:  a.reserve(count);
-     */
-    /**************************************************************************/
-
-    // TO DO !!!
-
+    for(int i=0;i<points.size();i++){
+        result.push_back(H*points[i]);
+    }
     return result;
 }
 
