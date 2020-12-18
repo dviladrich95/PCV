@@ -117,24 +117,16 @@ cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
     cv::Mat_<float> A_ext = A;
     cv::vconcat(A,zero_vector);
     cv::SVD svd(A_ext.t()*A_ext, cv::SVD::FULL_UV);
-    //std::cout << svd.w;
-    //std::cout << svd.vt;
-    std::cout << svd.vt.row(8);
+    std::cout << svd.w << std::endl;
+    std::cout << svd.vt << std::endl;
+    std::cout << svd.vt.row(8) << std::endl;
 
-    cv::Mat h = cv::Mat(svd.vt.row(8)); // do we need to multiply by smallest svd.w here?
+    std::vector<float> h =svd.vt.row(8); // do we need to multiply by smallest svd.w here?
     //std::cout << h;
 
-    cv::Mat H_cond = cv::Mat_<float>::zeros(3,3);
-
-    H_cond.at<float>(0,0) = h.at<float>(0,0);
-    H_cond.at<float>(0,1) = h.at<float>(0,1);
-    H_cond.at<float>(0,2) = h.at<float>(0,2);
-    H_cond.at<float>(1,0) = h.at<float>(0,3);
-    H_cond.at<float>(1,1) = h.at<float>(0,4);
-    H_cond.at<float>(1,2) = h.at<float>(0,5);
-    H_cond.at<float>(2,0) = h.at<float>(0,6);
-    H_cond.at<float>(2,1) = h.at<float>(0,7);
-    H_cond.at<float>(2,2) = h.at<float>(0,8);
+    cv::Matx33f H_cond=cv::Matx33f(h[0],h[1],h[2],
+                                   h[3],h[4],h[5],
+                                   h[6],h[7],h[8]);
 
     return H_cond;
 
@@ -155,11 +147,13 @@ cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33
     float ty= T_base(1,2);
 
 
+
     cv::Matx33f T_base_inv= cv::Matx33f(1/sx,0,-tx/sx,
                                         0,1/sy,-ty/sy,
                                         0,0,1);
-    cv::Matx33f H_decon = T_base.inv() * H * T_attach;
+    cv::Matx33f H_decon = T_base_inv * H * T_attach;
 
+    std::cout << "T_base_inv" << std::endl << T_base_inv << std::endl;
 
     return H_decon;
 }
@@ -179,8 +173,8 @@ cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<c
         cv::Matx33f attach_cond = getCondition2D(attach);
         //std::cout << attach_cond;
 
-        std::vector<cv::Vec3f>(c_baseMAT);
-        std::vector<cv::Vec3f>c_attachMAT;
+        std::vector<cv::Vec3f> c_baseMAT;
+        std::vector<cv::Vec3f> c_attachMAT;
         c_baseMAT = applyH_2D(base, base_cond, GEOM_TYPE_POINT);
         c_attachMAT = applyH_2D(attach, attach_cond, GEOM_TYPE_POINT);
 
