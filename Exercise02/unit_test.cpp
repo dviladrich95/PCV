@@ -107,7 +107,6 @@ void test_solve_dlt(void){
                 0.024604173, -0.041672569, 0.56645769);
     Htrue *= 1.0f / Htrue(2,2);
     const float eps = 1e-3f;
-    float error_solve_dlt=sum(abs(Mat(Hest - Htrue))).val[0] ;
     if (sum(abs(Mat(Hest - Htrue))).val[0] > eps){
         cout << "Warning: There seems to be a problem with solve_dlt_homography2D(..)!" << endl;
         cout << "\t==> Wrong or inaccurate calculations!" << endl;
@@ -127,7 +126,6 @@ void test_decondition(void){
     H *= 1.0f / H(2,2);
     Matx33f Htrue(0.9304952, -0.11296108, -16.839279, -0.19729686, 1.003845, -601.02362, 0.00012028422, -0.00024751772, 1);
     const float eps = 1e-3f;
-    float error_decondition=sum(abs(Mat(H - Htrue))).val[0];
     if (sum(abs(Mat(H - Htrue))).val[0] > eps){
         cout << "Warning: There seems to be a problem with decondition_homography2D(..)!" << endl;
         cout << "\t==> Wrong or inaccurate calculations!" << endl;
@@ -163,7 +161,6 @@ void test_homography2D(void){
     Hest *= 1.0f / Hest(2,2);
     Matx33f Htrue(0.9304952, -0.11296108, -16.839279, -0.19729686, 1.003845, -601.02362, 0.00012028422, -0.00024751772, 1);
     const float eps = 1e-3f;
-    float error_hom2d=sum(abs(Mat(Hest - Htrue))).val[0] ;
     if (sum(abs(Mat(Hest - Htrue))).val[0] > eps){
         cout << "Warning: There seems to be a problem with homography2D(..)!" << endl;
         cout << "\t==> Wrong or inaccurate calculations!" << endl;

@@ -18,13 +18,12 @@ namespace pcv2 {
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
 {
-    float num_points=points.size();
     cv::Vec2f sum_points(0.0,0.0);
     cv::Vec2f mean_point(0.0,0.0);
-    double sum_sx=0.0;
-    double sum_sy=0.0;
-    double sx=0.0;
-    double sy=0.0;
+    float sum_sx=0.0;
+    float sum_sy=0.0;
+    float sx;
+    float sy;
 
     for(const auto & point : points){
         cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
@@ -45,93 +44,45 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
                                              0,1.0/sy,-mean_point[1]/sy,
                                              0,0,1);
     return condition_matrix;
- }
+}
 
 
 /**
  * @brief define the design matrix as needed to compute 2D-homography
  * @param co// TO DO !!!nditioned_base first set of conditioned points x' --> x' = H * x
- * @param conditioned_attach second set of conditioned points x --> x' = H * x
+ * @param ca second set of conditioned points x --> x' = H * x
  * @returns the design matrix to be computed
  */
-cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &conditioned_base, const std::vector<cv::Vec3f> &conditioned_attach)
-{
-    
-    cv::Mat_<float> design_matrix=(cv::Mat_<float>(8, 9) <<
-    -conditioned_base[0][2]*conditioned_attach[0][0], -conditioned_base[0][2]*conditioned_attach[0][1], -conditioned_base[0][2]*conditioned_attach[0][2], 0, 0, 0, conditioned_base[0][0]*conditioned_attach[0][0], conditioned_base[0][0]*conditioned_attach[0][1], conditioned_base[0][0]*conditioned_attach[0][2],
-    0, 0, 0, -conditioned_base[0][2]*conditioned_attach[0][0], -conditioned_base[0][2]*conditioned_attach[0][1], -conditioned_base[0][2]*conditioned_attach[0][2], conditioned_base[0][1]*conditioned_attach[0][0], conditioned_base[0][1]*conditioned_attach[0][1], conditioned_base[0][1]*conditioned_attach[0][2],
-    -conditioned_base[1][2]*conditioned_attach[1][0], -conditioned_base[1][2]*conditioned_attach[1][1], -conditioned_base[1][2]*conditioned_attach[1][2], 0, 0, 0, conditioned_base[1][0]*conditioned_attach[1][0], conditioned_base[1][0]*conditioned_attach[1][1], conditioned_base[1][0]*conditioned_attach[1][2],
-    0, 0, 0, -conditioned_base[1][2]*conditioned_attach[1][0], -conditioned_base[1][2]*conditioned_attach[1][1], -conditioned_base[1][2]*conditioned_attach[1][2], conditioned_base[1][1]*conditioned_attach[1][0], conditioned_base[1][1]*conditioned_attach[1][1], conditioned_base[1][1]*conditioned_attach[1][2],
-    -conditioned_base[2][2]*conditioned_attach[2][0], -conditioned_base[2][2]*conditioned_attach[2][1], -conditioned_base[2][2]*conditioned_attach[2][2], 0, 0, 0, conditioned_base[2][0]*conditioned_attach[2][0], conditioned_base[2][0]*conditioned_attach[2][1], conditioned_base[2][0]*conditioned_attach[2][2],
-    0, 0, 0, -conditioned_base[2][2]*conditioned_attach[2][0], -conditioned_base[2][2]*conditioned_attach[2][1], -conditioned_base[2][2]*conditioned_attach[2][2], conditioned_base[2][1]*conditioned_attach[2][0], conditioned_base[2][1]*conditioned_attach[2][1], conditioned_base[2][1]*conditioned_attach[2][2],
-    -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], 0, 0, 0, conditioned_base[3][0]*conditioned_attach[3][0], conditioned_base[3][0]*conditioned_attach[3][1], conditioned_base[3][0]*conditioned_attach[3][2],
-    0, 0, 0, -conditioned_base[3][2]*conditioned_attach[3][0], -conditioned_base[3][2]*conditioned_attach[3][1], -conditioned_base[3][2]*conditioned_attach[3][2], conditioned_base[3][1]*conditioned_attach[3][0], conditioned_base[3][1]*conditioned_attach[3][1], conditioned_base[3][1]*conditioned_attach[3][2]);
-
-    //std::cout << "design matrix" << design_matrix;
-    return design_matrix;
-    
-    /**
-    cv::Mat_<float> design_matrix=cv::Mat_<float>::zeros(int(conditioned_base.size()), 9);
-    cv::Mat_<float> line1=cv::Mat_<float>::zeros(1, 9);
-    cv::Mat_<float> line2=cv::Mat_<float>::zeros(1, 9);
-    std::vector<cv::Mat_<float>> design_matrix_block;
-    for(int i = 0;i<conditioned_base.size();i++){
-        cv::Vec3f x_i = conditioned_base[i];
-        cv::Vec3f x_f = conditioned_attach[i];
-        std::vector<cv::Vec3f> line1_list={-conditioned_base[i][2]*conditioned_attach[i],
-                                           cv::Vec3f(0.0,0.0,0.0),
-                                           conditioned_base[i][0]*conditioned_attach[i]};
-        std::vector<cv::Vec3f> line2_list={cv::Vec3f(0.0,0.0,0.0),
-                                           -conditioned_base[i][2]*conditioned_attach[i],
-                                           conditioned_base[i][1]*conditioned_attach[i]};
-
-
-        cv::hconcat(line1_list,line1);
-        cv::hconcat(line2_list,line2);
-        //line1.t();
-        //line2.t();
-        design_matrix_block.push_back(line1);
-        design_matrix_block.push_back(line2);
-        cv::vconcat(line1,design_matrix);
-        cv::vconcat(line2,design_matrix);
-
+    cv::Mat_<float> getDesignMatrix_homography2D(const std::vector<cv::Vec3f> &cb, const std::vector<cv::Vec3f> &ca)
+    {
+        cv::Mat_<float> design_matrix=(cv::Mat_<float>(8, 9) <<
+                -cb[0][2]*ca[0][0], -cb[0][2]*ca[0][1], -cb[0][2]*ca[0][2],0, 0, 0,cb[0][0]*ca[0][0], cb[0][0]*ca[0][1], cb[0][0]*ca[0][2],
+                0, 0, 0,-cb[0][2]*ca[0][0], -cb[0][2]*ca[0][1], -cb[0][2]*ca[0][2],cb[0][1]*ca[0][0], cb[0][1]*ca[0][1], cb[0][1]*ca[0][2],
+                -cb[1][2]*ca[1][0], -cb[1][2]*ca[1][1], -cb[1][2]*ca[1][2],0, 0, 0,cb[1][0]*ca[1][0], cb[1][0]*ca[1][1], cb[1][0]*ca[1][2],
+                0, 0, 0,-cb[1][2]*ca[1][0], -cb[1][2]*ca[1][1], -cb[1][2]*ca[1][2],cb[1][1]*ca[1][0], cb[1][1]*ca[1][1], cb[1][1]*ca[1][2],
+                -cb[2][2]*ca[2][0], -cb[2][2]*ca[2][1], -cb[2][2]*ca[2][2],0, 0, 0,cb[2][0]*ca[2][0], cb[2][0]*ca[2][1], cb[2][0]*ca[2][2],
+                0, 0, 0, -cb[2][2]*ca[2][0], -cb[2][2]*ca[2][1], -cb[2][2]*ca[2][2],cb[2][1]*ca[2][0], cb[2][1]*ca[2][1], cb[2][1]*ca[2][2],
+                -cb[3][2]*ca[3][0], -cb[3][2]*ca[3][1], -cb[3][2]*ca[3][2],0, 0, 0,cb[3][0]*ca[3][0], cb[3][0]*ca[3][1], cb[3][0]*ca[3][2],
+                0, 0, 0, -cb[3][2]*ca[3][0], -cb[3][2]*ca[3][1], -cb[3][2]*ca[3][2],cb[3][1]*ca[3][0], cb[3][1]*ca[3][1], cb[3][1]*ca[3][2]);
+        return design_matrix;
     }
-    std::cout << design_matrix;
-    std::cout << std::endl;
-    //cv::vconcat(design_matrix_block,design_matrix);
-    
-    */ 
 
+    cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
+    {
+        cv::SVD svd(A,cv::SVD::FULL_UV);
+        cv::Mat_<float> H_cond = cv::Mat_<float>::zeros(3,3);
 
-}
-
-
-/**
- * @brief solve homogeneous equation system by usage of SVD
- * @param A the design matrix
- * @returns solution of the homogeneous equation system
- */
-cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
-{
-    cv::Mat_<float> zero_vector = cv::Mat_<float>::zeros(1,9);
-    cv::Mat_<float> A_ext = A;
-    cv::vconcat(A,zero_vector);
-    cv::SVD svd(A_ext.t()*A_ext, cv::SVD::FULL_UV);
-    std::cout << svd.w << std::endl;
-    std::cout << svd.vt << std::endl;
-    std::cout << svd.vt.row(8) << std::endl;
-
-    std::vector<float> h =svd.vt.row(8); // do we need to multiply by smallest svd.w here?
-    //std::cout << h;
-
-    cv::Matx33f H_cond=cv::Matx33f(h[0],h[1],h[2],
-                                   h[3],h[4],h[5],
-                                   h[6],h[7],h[8]);
-
-    return H_cond;
-
-}
-
+        H_cond.at<float>(0,0) = svd.vt.at<float>(8,0);
+        H_cond.at<float>(0,1) = svd.vt.at<float>(8,1);
+        H_cond.at<float>(0,2) = svd.vt.at<float>(8,2);
+        H_cond.at<float>(1,0) = svd.vt.at<float>(8,3);
+        H_cond.at<float>(1,1) = svd.vt.at<float>(8,4);
+        H_cond.at<float>(1,2) = svd.vt.at<float>(8,5);
+        H_cond.at<float>(2,0) = svd.vt.at<float>(8,6);
+        H_cond.at<float>(2,1) = svd.vt.at<float>(8,7);
+        H_cond.at<float>(2,2) = svd.vt.at<float>(8,8);
+        return H_cond;
+    }
 
 /**
  * @brief decondition a homography that was estimated from conditioned point clouds
@@ -139,22 +90,17 @@ cv::Matx33f solve_dlt_homography2D(const cv::Mat_<float> &A)
  * @param T_attach conditioning matrix T of second set of points x
  * @param H conditioned homography that has to be un-conditioned (in-place)
  */
-cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33f &T_attach, const cv::Matx33f &H) 
+cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33f &T_attach, const cv::Matx33f &H)
 {
     float sx= T_base(0,0);
     float sy= T_base(1,1);
     float tx= T_base(0,2);
     float ty= T_base(1,2);
 
-
-
     cv::Matx33f T_base_inv= cv::Matx33f(1/sx,0,-tx/sx,
                                         0,1/sy,-ty/sy,
                                         0,0,1);
     cv::Matx33f H_decon = T_base_inv * H * T_attach;
-
-    std::cout << "T_base_inv" << std::endl << T_base_inv << std::endl;
-
     return H_decon;
 }
 
@@ -168,10 +114,8 @@ cv::Matx33f decondition_homography2D(const cv::Matx33f &T_base, const cv::Matx33
 cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<cv::Vec3f> &attach)
 {
         cv::Matx33f base_cond = getCondition2D(base);
-        //std::cout << base_cond;
 
         cv::Matx33f attach_cond = getCondition2D(attach);
-        //std::cout << attach_cond;
 
         std::vector<cv::Vec3f> c_baseMAT;
         std::vector<cv::Vec3f> c_attachMAT;
@@ -179,17 +123,10 @@ cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<c
         c_attachMAT = applyH_2D(attach, attach_cond, GEOM_TYPE_POINT);
 
         cv::Mat_<float> DesignMat = getDesignMatrix_homography2D(c_baseMAT, c_attachMAT);
-        //std::cout << DesignMat;
-
         cv::Matx33f dlt = solve_dlt_homography2D(DesignMat);
-
         cv::Matx33f Hom = decondition_homography2D(base_cond, attach_cond, dlt);
-
         return Hom;
-    
 }
-
-
 
 // Functions from exercise 1
 // Reuse your solutions from the last exercise here
@@ -217,13 +154,13 @@ cv::Matx33f homography2D(const std::vector<cv::Vec3f> &base, const std::vector<c
 
         switch (type) {
             case GEOM_TYPE_POINT: {
-                for(int i=0;i<geomObjects.size();i++){
-                    result.push_back(H*geomObjects[i]);
+                for(const auto & geomObject : geomObjects){
+                    result.push_back(H*geomObject);
                 }
             } break;
             case GEOM_TYPE_LINE: {
-                for(int i=0;i<geomObjects.size();i++){
-                    result.push_back(H.inv().t()*geomObjects[i]);
+                for(const auto & geomObject : geomObjects){
+                    result.push_back(H.inv().t()*geomObject);
                 }
             } break;
             default:
@@ -242,6 +179,5 @@ cv::Vec3f eucl2hom_point_2D(const cv::Vec2f& p)
 {
     return cv::Vec3f(p[0],p[1],1);
 }
-
 
 }
