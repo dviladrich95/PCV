@@ -224,7 +224,9 @@ cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
 cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D, const cv::Matx34f& P)
 {
     // TO DO !!!
-    return P;
+    
+    cv::Matx34f D= (T_2D.inv()) * P * T_3D;
+    return D;
 }
 
 
