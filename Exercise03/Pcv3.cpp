@@ -156,7 +156,36 @@ std::vector<cv::Vec4f> applyH_3D_points(const std::vector<cv::Vec4f>& points, co
 cv::Mat_<float> getDesignMatrix_camera(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
     // TO DO !!!
-    return cv::Mat_<float>(2*points2D.size(), 12);
+       cv::Mat designMAt= cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+for (int i=0; i<points2D.size(); i++){
+
+    int a= i*2;
+    //-W*X
+    designMAt.at<float>(a,0)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMAt.at<float>(a,1)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMAt.at<float>(a,2)=(-points2D[i][2]*points3D[i][2]);//-w'*w
+    designMAt.at<float>(a,3)=(-points2D[i][2]*points3D[i][3]);//-w*z
+    //u'*u
+    designMAt.at<float>(a,8)=points2D[i][0]*points3D[i][0];//u'*u
+    designMAt.at<float>(a,9)=points2D[i][0]*points3D[i][1];//u'*v
+    designMAt.at<float>(a,10)=points2D[i][0]*points3D[i][2];//u'*w
+    designMAt.at<float>(a,11)=points2D[i][0]*points3D[i][3];//u*z
+    //-W*X
+    designMAt.at<float>(a+1,4)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMAt.at<float>(a+1,5)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMAt.at<float>(a+1,6)=(-points2D[i][2]*points3D[i][2]);
+    designMAt.at<float>(a+1,7)=(-points2D[i][2]*points3D[i][3]);//-w'*w
+
+    //v'*u
+    designMAt.at<float>(a+1,8)=points2D[i][1]*points3D[i][0];//v'*u
+    designMAt.at<float>(a+1,9)=points2D[i][1]*points3D[i][1];//v'*v
+    designMAt.at<float>(a+1,10)=points2D[i][1]*points3D[i][2];//v'*w
+    designMAt.at<float>(a+1,11)=points2D[i][1]*points3D[i][3];
+
+
+  }
+
+    return designMAt;
 }
 
 
