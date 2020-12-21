@@ -239,6 +239,26 @@ cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D,
 cv::Matx34f calibrate(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
     // TO DO !!!
+    std::vector<cv::Vec3f>(c_P2D);
+std::vector<cv::Vec4f>(c_P3D);
+
+
+cv::Matx33f P2D = getCondition2D(points2D);
+cv::Matx44f P3D = getCondition3D(points3D);
+
+c_P2D = applyH_2D(points2D, P2D, GEOM_TYPE_POINT);
+c_P3D = applyH_3D_points(points3D,P3D);
+
+cv::Mat DMA = cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+DMA = getDesignMatrix_camera(c_P2D,c_P3D);
+
+cv::Matx34f dlt = solve_dlt_camera(DMA);
+
+cv::Matx34f Hom = decondition_camera(P2D, P3D, dlt);
+
+return Hom;
+
+    return cv::Matx34f::eye();
     return cv::Matx34f::eye();
 }
 
