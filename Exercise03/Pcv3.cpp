@@ -197,7 +197,22 @@ for (int i=0; i<points2D.size(); i++){
 cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
 {
     // TO DO !!!
-    return cv::Matx34f::eye();
+        cv::SVD svd(A,cv::SVD::FULL_UV);
+        cv::Mat_<float> P = cv::Mat_<float>::zeros(3,4);
+
+        P.at<float>(0,0) = svd.vt.at<float>(11,0);
+        P.at<float>(0,1) = svd.vt.at<float>(11,1);
+        P.at<float>(0,2) = svd.vt.at<float>(11,2);
+        P.at<float>(0,3) = svd.vt.at<float>(11,3);
+        P.at<float>(1,0) = svd.vt.at<float>(11,4);
+        P.at<float>(1,1) = svd.vt.at<float>(11,5);
+        P.at<float>(1,2) = svd.vt.at<float>(11,6);
+        P.at<float>(1,3) = svd.vt.at<float>(11,7);
+        P.at<float>(2,0) = svd.vt.at<float>(11,8);
+        P.at<float>(2,1) = svd.vt.at<float>(11,9);
+        P.at<float>(2,2) = svd.vt.at<float>(11,10);
+        P.at<float>(2,3) = svd.vt.at<float>(11,11);
+        return P;
 }
 
 /**
