@@ -305,7 +305,7 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     // 3D camera location in world coordinates
     //info.cameraLocation(0) = ...;
     //info.cameraLocation(1) = ...;
-    //info.cameraLocation(2) = ...;
+    //info.cameraLocation(2) = ...';
 
 }
 
