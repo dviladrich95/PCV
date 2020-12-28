@@ -273,39 +273,39 @@ return Hom;
  */
 void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, ProjectionMatrixInterpretation &info)
 {
-    // TO DO !!!
-
-    // K = ...;
-    // R = ...;
+    cv::Matx33f M=cv::Matx33f(P.val[0], P.val[1], P.val[2],
+                              P.val[4], P.val[5], P.val[6],
+                              P.val[8], P.val[9], P.val[10]);
+    cv::RQDecomp3x3(M, K, R);
     
-    /*
+
     // Principal distance or focal length
-    info.principalDistance = ...;
+    info.principalDistance = K.val[0];
     
     // Skew as an angle and in degrees
-    info.skew = ...;
+    info.skew = K.val[1];
     
     // Aspect ratio of the pixels
-    info.aspectRatio = ...;
+    info.aspectRatio = K.val[4]/K.val[0];
     
     // Location of principal point in image (pixel) coordinates
-    info.principalPoint(0) = ...;
-    info.principalPoint(1) = ...;
+    info.principalPoint(0) = K.val[2];
+    info.principalPoint(1) = K.val[5];
     
     // Camera rotation angle 1/3
-    info.omega = ...;
+    //info.omega = ;
     
     // Camera rotation angle 2/3
-    info.phi = ...;
+    //info.phi = ...;
     
     // Camera rotation angle 3/3
-    info.kappa = ...;
+    //info.kappa = ...;
     
     // 3D camera location in world coordinates
-    info.cameraLocation(0) = ...;
-    info.cameraLocation(1) = ...;
-    info.cameraLocation(2) = ...;
-    */
+    //info.cameraLocation(0) = ...;
+    //info.cameraLocation(1) = ...;
+    //info.cameraLocation(2) = ...;
+
 }
 
 
