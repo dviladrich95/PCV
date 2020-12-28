@@ -306,7 +306,7 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     info.principalDistance = K.val[0];
     
     // Skew as an angle and in degrees
-    //info.skew = 1/std::tan(18.06/ K.val[0]);
+    info.skew = 1/std::tan(18.06/ K.val[0]);
     
     // Aspect ratio of the pixels
     info.aspectRatio = K.val[4]/K.val[0];
@@ -316,13 +316,13 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     info.principalPoint(1) = K.val[5];
     
     // Camera rotation angle 1/3
-    //info.omega = atan2();
+    info.omega = atan2();
     
     // Camera rotation angle 2/3
-    //info.phi = ...;
+    info.phi = ...;
     
     // Camera rotation angle 3/3
-    //info.kappa = ...;
+    info.kappa = ...;
     
     // 3D camera location in world coordinates
     //info.cameraLocation(0) = ...;
