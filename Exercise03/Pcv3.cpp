@@ -276,14 +276,37 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     cv::Matx33f M=cv::Matx33f(P.val[0], P.val[1], P.val[2],
                               P.val[4], P.val[5], P.val[6],
                               P.val[8], P.val[9], P.val[10]);
-    cv::RQDecomp3x3(M, K, R);
-    
+
+    float lambda = cv::determinant(M)/std::abs(cv::determinant(M))*1/cv::norm(M.row(2));
+
+    cv::Matx33f M_norm = M*lambda;
+
+    cv::RQDecomp3x3(M_norm, K, R);
+
+    //cv::Matx31f C = -M_norm.inv()*(P.col(3)*lambda);
+
+    cv::SVD svd(P,cv::SVD::FULL_UV);
+    cv::Mat_<float> C = cv::Mat_<float>::zeros(1,4);
+    //std::cout << svd.w << std::endl;
+    //std::cout << svd.vt << std::endl;
+
+    C.at<float>(0,0) = svd.vt.at<float>(3,0);
+    C.at<float>(0,1) = svd.vt.at<float>(3,1);
+    C.at<float>(0,2) = svd.vt.at<float>(3,2);
+    C.at<float>(0,3) = svd.vt.at<float>(3,3);
+
+    std::cout << C << std::endl;
+
+    cv::Matx31f C_norm = cv::Matx31f(C[0][0]/C[0][3], C[0][1]/C[0][3], C[0][2]/C[0][3]);
+    std::cout << C_norm << std::endl;
+
+
 
     // Principal distance or focal length
     info.principalDistance = K.val[0];
     
     // Skew as an angle and in degrees
-    info.skew = K.val[1];
+    //info.skew = 1/std::tan(18.06/ K.val[0]);
     
     // Aspect ratio of the pixels
     info.aspectRatio = K.val[4]/K.val[0];
@@ -293,7 +316,7 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     info.principalPoint(1) = K.val[5];
     
     // Camera rotation angle 1/3
-    //info.omega = ;
+    //info.omega = atan2();
     
     // Camera rotation angle 2/3
     //info.phi = ...;
