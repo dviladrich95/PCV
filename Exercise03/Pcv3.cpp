@@ -306,7 +306,7 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     info.principalDistance = K.val[0];
     
     // Skew as an angle and in degrees
-    info.skew = std::atan2(-R.val[1],R.val[0])*360/(2*M_PI);
+    info.skew = std::atan2(K.val[0],-K.val[1])*360/(2*M_PI);
 
     // Aspect ratio of the pixels
     info.aspectRatio = K.val[4]/K.val[0];
@@ -325,9 +325,9 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
     info.kappa = std::atan2(-R.val[3],R.val[0])*360/(2*M_PI);
     
     // 3D camera location in world coordinates
-    //info.cameraLocation(0) = ...;
-    //info.cameraLocation(1) = ...;
-    //info.cameraLocation(2) = ...;
+    info.cameraLocation(0) = C_norm.val[0];
+    info.cameraLocation(1) = C_norm.val[1];
+    info.cameraLocation(2) = C_norm.val[2];
 
 }
 
