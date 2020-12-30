@@ -53,7 +53,8 @@ int getPoints(const cv::Mat &calibImg, const std::string &filenameList3DPoints, 
     };
 
     // show input image and install mouse callback
-    cv::namedWindow( windowInfo.name.c_str(), cv::WINDOW_AUTOSIZE | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+    cv::namedWindow( windowInfo.name.c_str(), cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+    cv::resizeWindow(	windowInfo.name.c_str(),1000,1000);
     cv::imshow( windowInfo.name.c_str(), windowInfo.img );
     cv::setMouseCallback(windowInfo.name.c_str(), getPointsCB, (void*) &windowInfo);
     // wait until any key was pressed

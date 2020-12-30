@@ -17,7 +17,6 @@ namespace pcv3 {
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
 {
-    float num_points=points.size();
     cv::Vec2f sum_points(0.0,0.0);
     cv::Vec2f mean_point(0.0,0.0);
     double sum_sx=0.0;
@@ -53,7 +52,6 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f> &points)
  */
 cv::Matx44f getCondition3D(const std::vector<cv::Vec4f> &points)
 {
-    float num_points=points.size();
     cv::Vec3f sum_points(0.0,0.0,0.0);
     cv::Vec3f mean_point(0.0,0.0,0.0);
     double sum_sx=0.0;
@@ -114,13 +112,13 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
 
     switch (type) {
         case GEOM_TYPE_POINT: {
-            for(int i=0;i<geomObjects.size();i++){
-                result.push_back(H*geomObjects[i]);
+            for(const auto & geomObject : geomObjects){
+                result.push_back(H*geomObject);
             }
         } break;
         case GEOM_TYPE_LINE: {
-            for(int i=0;i<geomObjects.size();i++){
-                result.push_back(H.inv().t()*geomObjects[i]);
+            for(const auto & geomObject : geomObjects){
+                result.push_back(H.inv().t()*geomObject);
             }
         } break;
         default:
@@ -139,8 +137,8 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
 std::vector<cv::Vec4f> applyH_3D_points(const std::vector<cv::Vec4f>& points, const cv::Matx44f &H)
 {
     std::vector<cv::Vec4f> result;
-    for(int i=0;i<points.size();i++){
-        result.push_back(H*points[i]);
+    for(const auto & point : points){
+        result.push_back(H*point);
     }
     return result;
 }
@@ -155,37 +153,33 @@ std::vector<cv::Vec4f> applyH_3D_points(const std::vector<cv::Vec4f>& points, co
  */
 cv::Mat_<float> getDesignMatrix_camera(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
-    // TO DO !!!
-       cv::Mat designMAt= cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+       cv::Mat designMat= cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
 for (int i=0; i<points2D.size(); i++){
 
     int a= i*2;
     //-W*X
-    designMAt.at<float>(a,0)=(-points2D[i][2]*points3D[i][0]);//-w'*u
-    designMAt.at<float>(a,1)=(-points2D[i][2]*points3D[i][1]);//-w'*v
-    designMAt.at<float>(a,2)=(-points2D[i][2]*points3D[i][2]);//-w'*w
-    designMAt.at<float>(a,3)=(-points2D[i][2]*points3D[i][3]);//-w*z
+    designMat.at<float>(a,0)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMat.at<float>(a,1)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMat.at<float>(a,2)=(-points2D[i][2]*points3D[i][2]);//-w'*w
+    designMat.at<float>(a,3)=(-points2D[i][2]*points3D[i][3]);//-w*z
     //u'*u
-    designMAt.at<float>(a,8)=points2D[i][0]*points3D[i][0];//u'*u
-    designMAt.at<float>(a,9)=points2D[i][0]*points3D[i][1];//u'*v
-    designMAt.at<float>(a,10)=points2D[i][0]*points3D[i][2];//u'*w
-    designMAt.at<float>(a,11)=points2D[i][0]*points3D[i][3];//u*z
+    designMat.at<float>(a,8)=points2D[i][0]*points3D[i][0];//u'*u
+    designMat.at<float>(a,9)=points2D[i][0]*points3D[i][1];//u'*v
+    designMat.at<float>(a,10)=points2D[i][0]*points3D[i][2];//u'*w
+    designMat.at<float>(a,11)=points2D[i][0]*points3D[i][3];//u*z
     //-W*X
-    designMAt.at<float>(a+1,4)=(-points2D[i][2]*points3D[i][0]);//-w'*u
-    designMAt.at<float>(a+1,5)=(-points2D[i][2]*points3D[i][1]);//-w'*v
-    designMAt.at<float>(a+1,6)=(-points2D[i][2]*points3D[i][2]);
-    designMAt.at<float>(a+1,7)=(-points2D[i][2]*points3D[i][3]);//-w'*w
+    designMat.at<float>(a+1,4)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMat.at<float>(a+1,5)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMat.at<float>(a+1,6)=(-points2D[i][2]*points3D[i][2]);
+    designMat.at<float>(a+1,7)=(-points2D[i][2]*points3D[i][3]);//-w'*w
 
     //v'*u
-    designMAt.at<float>(a+1,8)=points2D[i][1]*points3D[i][0];//v'*u
-    designMAt.at<float>(a+1,9)=points2D[i][1]*points3D[i][1];//v'*v
-    designMAt.at<float>(a+1,10)=points2D[i][1]*points3D[i][2];//v'*w
-    designMAt.at<float>(a+1,11)=points2D[i][1]*points3D[i][3];
-
-
+    designMat.at<float>(a+1,8)=points2D[i][1]*points3D[i][0];//v'*u
+    designMat.at<float>(a+1,9)=points2D[i][1]*points3D[i][1];//v'*v
+    designMat.at<float>(a+1,10)=points2D[i][1]*points3D[i][2];//v'*w
+    designMat.at<float>(a+1,11)=points2D[i][1]*points3D[i][3];
   }
-
-    return designMAt;
+    return designMat;
 }
 
 
@@ -196,7 +190,6 @@ for (int i=0; i<points2D.size(); i++){
  */
 cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
 {
-    // TO DO !!!
         cv::SVD svd(A,cv::SVD::FULL_UV);
         cv::Mat_<float> P = cv::Mat_<float>::zeros(3,4);
 
@@ -223,8 +216,6 @@ cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
  */
 cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D, const cv::Matx34f& P)
 {
-    // TO DO !!!
-    
     cv::Matx34f D= (T_2D.inv()) * P * T_3D;
     return D;
 }
@@ -238,28 +229,24 @@ cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D,
  */
 cv::Matx34f calibrate(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
-    // TO DO !!!
     std::vector<cv::Vec3f>(c_P2D);
-std::vector<cv::Vec4f>(c_P3D);
+    std::vector<cv::Vec4f>(c_P3D);
 
 
-cv::Matx33f P2D = getCondition2D(points2D);
-cv::Matx44f P3D = getCondition3D(points3D);
+    cv::Matx33f P2D = getCondition2D(points2D);
+    cv::Matx44f P3D = getCondition3D(points3D);
 
-c_P2D = applyH_2D(points2D, P2D, GEOM_TYPE_POINT);
-c_P3D = applyH_3D_points(points3D,P3D);
+    c_P2D = applyH_2D(points2D, P2D, GEOM_TYPE_POINT);
+    c_P3D = applyH_3D_points(points3D,P3D);
 
-cv::Mat DMA = cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
-DMA = getDesignMatrix_camera(c_P2D,c_P3D);
+    cv::Mat DMA = cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+    DMA = getDesignMatrix_camera(c_P2D,c_P3D);
 
-cv::Matx34f dlt = solve_dlt_camera(DMA);
+    cv::Matx34f dlt = solve_dlt_camera(DMA);
 
-cv::Matx34f Hom = decondition_camera(P2D, P3D, dlt);
+    cv::Matx34f Hom = decondition_camera(P2D, P3D, dlt);
 
-return Hom;
-
-    return cv::Matx34f::eye();
-    return cv::Matx34f::eye();
+    return Hom;
 }
 
 
