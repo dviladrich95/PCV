@@ -266,16 +266,40 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
 
     float lambda = cv::determinant(M)/std::abs(cv::determinant(M))*1/cv::norm(M.row(2));
 
-    cv::Matx33f M_norm = M*lambda;
 
+    cv::Matx33f d1=cv::Matx33f(-1, 0, 0,
+                              0, 1, 0,
+                              0, 0, 1);
+
+    cv::Matx33f d2=cv::Matx33f(-1, 0, 0,
+                               0, 1, 0,
+                               0, 0, 1);
+
+    cv::Matx33f d3=cv::Matx33f(-1, 0, 0,
+                               0, 1, 0,
+                               0, 0, 1);
+
+    cv::Matx33f M_norm = M*lambda;
     cv::RQDecomp3x3(M_norm, K, R);
+
+    if (K.val[0]<0){
+        cv::Matx33f K= K.mul(d1);
+        cv::Matx33f R= R.mul(d1);
+    }
+    if (K.val[4]<0){
+        cv::Matx33f K= K.mul(d2);
+        cv::Matx33f R= R.mul(d2);
+    }
+    if (K.val[8]<0){
+        cv::Matx33f K= K.mul(d3);
+        cv::Matx33f R= R.mul(d3);
+    }
 
     //cv::Matx31f C = -M_norm.inv()*(P.col(3)*lambda);
 
     cv::SVD svd(P,cv::SVD::FULL_UV);
     cv::Mat_<float> C = cv::Mat_<float>::zeros(1,4);
-    //std::cout << svd.w << std::endl;
-    //std::cout << svd.vt << std::endl;
+
 
     C.at<float>(0,0) = svd.vt.at<float>(3,0);
     C.at<float>(0,1) = svd.vt.at<float>(3,1);
