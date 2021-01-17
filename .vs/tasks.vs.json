@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-CMakeLists",
+      "appliesTo": "Exercise03/CMakeLists.txt",
+      "type": "launch"
+    }
+  ]
+}
