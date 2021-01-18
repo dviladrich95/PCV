@@ -26,7 +26,7 @@ namespace pcv4 {
  */
 std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, const cv::Matx33f &H, GeometryType type)
 {
-    // TO DO !!!
+
     std::vector<cv::Vec3f> result;
     switch (type) {
         case GEOM_TYPE_POINT: {
