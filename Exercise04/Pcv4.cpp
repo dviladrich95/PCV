@@ -108,7 +108,7 @@ cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_con
 
     }
 
-    return designMAt;
+    return designMat;
 }
 
 
