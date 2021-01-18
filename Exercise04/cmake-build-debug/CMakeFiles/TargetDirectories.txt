@@ -1,0 +1,6 @@
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/code.dir
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/main_manual.dir
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/main_automatic.dir
+/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/unit_test.dir
