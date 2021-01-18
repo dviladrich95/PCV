@@ -264,11 +264,11 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
 cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, unsigned numIterations, float threshold)
 {
     const unsigned subsetSize = 8;
-    
+
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
     // Draw a random point index with unsigned index = uniformDist(rng);
-    
+
     // TO DO !!!
     return cv::Matx33f::eye();
 }
@@ -289,15 +289,15 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     // make a copy to not draw into the original images and destroy them
     cv::Mat img1_copy = img1.clone();
     cv::Mat img2_copy = img2.clone();
-        
+
     // TO DO !!!
     // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
     // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
-    
+
     // show images
     cv::imshow("Epilines img1", img1_copy);
     cv::imshow("Epilines img2", img2_copy);
-    
+
     cv::waitKey(0);
 }
 
@@ -312,12 +312,12 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
  */
 void filterMatches(const RawOrbMatches &rawOrbMatches, std::vector<cv::Vec3f>& p1, std::vector<cv::Vec3f>& p2)
 {
-    
+
 /******* Small std::map cheat sheet ************************************
 
 // This std::map stores pairs of ints and floats (key value pairs). Each float (value) can quickly be looked up with it's corresponding int (key).
 std::map<int, float> exampleMap;
- 
+
 // Looking up an element:
 int key = 5;
 auto it = exampleMap.find(key);
@@ -328,7 +328,7 @@ if (it == exampleMap.end()) {
     // do s.th. with the value
 }
 
-// Iteration over all elements: 
+// Iteration over all elements:
 for (const auto &pair : exampleMap) {
     int key = pair.first;
     float value = pair.second;
@@ -338,11 +338,11 @@ for (const auto &pair : exampleMap) {
 
     p1.clear();
     p2.clear();
-    
+
     const float ratio = 0.75f;
 
     for (const auto &pair : rawOrbMatches.matches_1_2) {
-        
+
         // TO DO !!!
         // Skip those pairs that don't fulfill the ratio test or cross consistency check
 
