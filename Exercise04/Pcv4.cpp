@@ -54,8 +54,7 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
 {
-    // TO DO !!!
-    float num_points=points2D.size();
+
     cv::Vec2f sum_points(0.0,0.0);
     cv::Vec2f mean_point(0.0,0.0);
     double sum_sx=0.0;
@@ -94,18 +93,18 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
 cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_conditioned, const std::vector<cv::Vec3f>& p2_conditioned)
 {
     // TO DO !!!
-    cv::Mat designMAt= cv::Mat::zeros(p1_conditioned.size(),9, CV_32FC1);
+    cv::Mat designMat= cv::Mat::zeros(p1_conditioned.size(),9, CV_32FC1);
 
     for (int i=0; i<p1_conditioned.size(); i++){
-        designMAt.at<float>(i,0)=(p1_conditioned[i][0]*p2_conditioned[i][0]);//x*x'
-        designMAt.at<float>(i,1)=(p1_conditioned[i][1]*p2_conditioned[i][0]);//y*x'
-        designMAt.at<float>(i,2)=(p1_conditioned[i][2]*p2_conditioned[i][0]);//w*x'
-        designMAt.at<float>(i,3)=(p1_conditioned[i][0]*p2_conditioned[i][1]);//x*y'
-        designMAt.at<float>(i,4)=(p1_conditioned[i][1]*p2_conditioned[i][1]);//y*y'
-        designMAt.at<float>(i,5)=(p1_conditioned[i][2]*p2_conditioned[i][1]);//w*y'
-        designMAt.at<float>(i,6)=(p1_conditioned[i][0]*p2_conditioned[i][2]);//x*w'
-        designMAt.at<float>(i,7)=(p1_conditioned[i][1]*p2_conditioned[i][2]);//y*w'
-        designMAt.at<float>(i,8)=(p1_conditioned[i][2]*p2_conditioned[i][2]);//w*w'
+        designMat.at<float>(i,0)=(p1_conditioned[i][0]*p2_conditioned[i][0]);//x*x'
+        designMat.at<float>(i,1)=(p1_conditioned[i][1]*p2_conditioned[i][0]);//y*x'
+        designMat.at<float>(i,2)=(p1_conditioned[i][2]*p2_conditioned[i][0]);//w*x'
+        designMat.at<float>(i,3)=(p1_conditioned[i][0]*p2_conditioned[i][1]);//x*y'
+        designMat.at<float>(i,4)=(p1_conditioned[i][1]*p2_conditioned[i][1]);//y*y'
+        designMat.at<float>(i,5)=(p1_conditioned[i][2]*p2_conditioned[i][1]);//w*y'
+        designMat.at<float>(i,6)=(p1_conditioned[i][0]*p2_conditioned[i][2]);//x*w'
+        designMat.at<float>(i,7)=(p1_conditioned[i][1]*p2_conditioned[i][2]);//y*w'
+        designMat.at<float>(i,8)=(p1_conditioned[i][2]*p2_conditioned[i][2]);//w*w'
 
     }
 
@@ -120,7 +119,7 @@ cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_con
  */
 cv::Matx33f solve_dlt_fundamental(const cv::Mat_<float>& A)
 {
-    // TO DO !!!
+
     cv::SVD svd(A,cv::SVD::FULL_UV);
     cv::Mat_<float> F = cv::Mat_<float>::zeros(3,3);
     //std::cout << svd.w << std::endl;
@@ -147,7 +146,6 @@ cv::Matx33f solve_dlt_fundamental(const cv::Mat_<float>& A)
  */
 cv::Matx33f forceSingularity(const cv::Matx33f& F)
 {
-    // TO DO !!!
     cv::SVD svd(F,cv::SVD::FULL_UV);
     //std::cout << svd.u << std::endl;
     //std::cout << svd.w << std::endl;
@@ -174,7 +172,6 @@ cv::Matx33f forceSingularity(const cv::Matx33f& F)
  */
 cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2, const cv::Matx33f& F)
 {
-    // TO DO !!!
     cv::Matx33f F_decond = T2.t() * F * T1;
     return F_decond;
 }
@@ -188,7 +185,6 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
  */
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
-    // TO DO !!!
     cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
