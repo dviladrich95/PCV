@@ -217,8 +217,12 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
  */
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
-    // TO DO !!!
-    return 0.0f;
+    cv::Vec3d p1_double = p1;
+    cv::Vec3d p2_double = p2;
+    cv::Matx33d F_double = F;
+    double sampson1 = cv::sampsonDistance(p1_double, p2_double, F_double);
+    //std::cout << sampson1 << std::endl;
+    return sampson1;
 }
 
 /**
@@ -231,8 +235,20 @@ float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
  */
 float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F)
 {
-    // TO DO !!!
-    return 0.0f;
+
+    double sum = 0;
+    cv::Matx33d F_double = F;
+    for (int i=0; i<p1.size();i++){
+        double sampson2;
+        cv::Vec3d p1_d = p1[i];
+        cv::Vec3d p2_d = p2[i];
+        sampson2 = cv::sampsonDistance(p1_d, p2_d, F_double);
+        sum += sampson2;
+    }
+    double d = sum/p1.size();
+
+    return d;
+
 }
 
 /**
