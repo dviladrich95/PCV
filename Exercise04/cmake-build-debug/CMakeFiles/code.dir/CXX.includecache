@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/andres/CLionProjects/PCV/Exercise04/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise04/Helper.h
 opencv2/opencv.hpp
 -
 vector
@@ -14,17 +14,17 @@ vector
 map
 -
 
-/home/andres/CLionProjects/PCV/Exercise04/Pcv4.cpp
+/home/daniel/TU_Berlin/PCV/Exercise04/Pcv4.cpp
 Pcv4.h
-/home/andres/CLionProjects/PCV/Exercise04/Pcv4.h
+/home/daniel/TU_Berlin/PCV/Exercise04/Pcv4.h
 random
 -
 opencv2/features2d.hpp
 -
 
-/home/andres/CLionProjects/PCV/Exercise04/Pcv4.h
+/home/daniel/TU_Berlin/PCV/Exercise04/Pcv4.h
 Helper.h
-/home/andres/CLionProjects/PCV/Exercise04/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise04/Helper.h
 opencv2/opencv.hpp
 -
 string

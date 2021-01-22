@@ -217,12 +217,26 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
  */
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
-    cv::Vec3d p1_double = p1;
+
+
+    cv::Vec3d p1d = p1;
+    cv::Vec3d p2d = p2;
+    cv::Matx33d Fd = F;
+    double d = cv::sampsonDistance(p1d,p2d,Fd);
+    cout<<p1<<endl;
+    return d;
+
+/*    cv::Vec3d p1_double = p1;
     cv::Vec3d p2_double = p2;
     cv::Matx33d F_double = F;
-    double sampson1 = cv::sampsonDistance(p1_double, p2_double, F_double);
-    //std::cout << sampson1 << std::endl;
-    return sampson1;
+    Vec<float, 1> sampson = (p2.t() * F * p1) * (p2.t() * F * p1)/(
+           (F*p1).val[0]*(F*p1).val[0]+
+            (F*p1).val[1]*(F*p1).val[1]+
+            (F.t()*p2).val[0]*(F.t()*p2).val[0]+
+            (F.t()*p2).val[1]*(F.t()*p2).val[1]);
+    std::cout << "sampson1" << std::endl;
+
+    return sampson.val[0];*/
 }
 
 /**
@@ -235,19 +249,30 @@ float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
  */
 float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F)
 {
+    double totd = 0;
+    cv::Matx33d Fd = F;
+    for (int i = 0; i< p1.size(); i++){
+        double d;
+        cv::Vec3d po1 = p1[i];
+        cv::Vec3d po2 = p2[i];
+        d = cv::sampsonDistance(po1, po2, Fd);
+        totd = totd + d;
+    }
+    double md = totd/(p1.size());
+    return md;
 
-    double sum = 0;
-    cv::Matx33d F_double = F;
+/*    double sum = 0;
     for (int i=0; i<p1.size();i++){
         double sampson2;
-        cv::Vec3d p1_d = p1[i];
-        cv::Vec3d p2_d = p2[i];
-        sampson2 = cv::sampsonDistance(p1_d, p2_d, F_double);
+        sampson2 = getError(p2[i], p1[i], F);
+        std::cout << sampson2 << std::endl;
         sum += sampson2;
     }
-    double d = sum/p1.size();
 
-    return d;
+    double d = sum/p1.size();
+    std::cout << "sampson2" << std::endl;
+
+    return d;*/
 
 }
 
@@ -261,19 +286,18 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-    cv::Matx33d  F_double = F;
-    float counter = 0;
-    for (int i=0; i<p1.size(); i++){
-        double sampson3;
+    cv::Matx33d Fd = F;
+    int inliers = 0;
+    for (int i=0; i<p1.size();i++){
+        double sampson2;
         cv::Vec3d p1_d = p1[i];
         cv::Vec3d p2_d = p2[i];
-        sampson3 = cv::sampsonDistance(p1_d, p2_d, F_double);
-        if (sampson3 < threshold){
-            counter = counter + 1;
+        sampson2 = cv::sampsonDistance(p1_d, p2_d, Fd);
+        if (sampson2<=threshold){
+            inliers= inliers + 1;
         }
-
     }
-    return counter;
+    return inliers;
 }
 
 
@@ -295,9 +319,24 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
     // Draw a random point index with unsigned index = uniformDist(rng);
-
-    // TO DO !!!
-    return cv::Matx33f::eye();
+    int max_num_inliers = 0;
+    cv::Matx33f F_best;
+    for(int i=0; i<numIterations;i++){
+        std::vector<cv::Vec3f> p1_sample;
+        std::vector<cv::Vec3f> p2_sample;
+        for( int j=0;j<subsetSize;j++){
+            unsigned index = uniformDist(rng);
+            p1_sample.push_back(p1[index]);
+            p2_sample.push_back(p2[index]);
+        }
+        cv::Matx33f F = getFundamentalMatrix(p1_sample,p2_sample);
+        int num_inliers = countInliers(p1_sample,p2_sample,F,threshold);
+        if(num_inliers>max_num_inliers){
+            max_num_inliers=num_inliers;
+            F_best=F;
+        }
+    }
+    return F_best;
 }
 
 
