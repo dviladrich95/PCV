@@ -261,8 +261,19 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-    // TO DO !!!
-    return 0;
+    cv::Matx33d  F_double = F;
+    float counter = 0;
+    for (int i=0; i<p1.size(); i++){
+        double sampson3;
+        cv::Vec3d p1_d = p1[i];
+        cv::Vec3d p2_d = p2[i];
+        sampson3 = cv::sampsonDistance(p1_d, p2_d, F_double);
+        if (sampson3 < threshold){
+            counter = counter + 1;
+        }
+
+    }
+    return counter;
 }
 
 
