@@ -287,6 +287,18 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
     cv::Matx33d Fd = F;
+    float counter = 0;
+    for (int i = 0; i< p1.size(); i++){
+        double d;
+        cv::Vec3d po1 = p1[i];
+        cv::Vec3d po2 = p2[i];
+        d = cv::sampsonDistance(po1, po2, Fd);
+        if (d < threshold){
+            counter = counter + 1;
+        }
+    }
+    return counter;
+/*    cv::Matx33d Fd = F;
     int inliers = 0;
     for (int i=0; i<p1.size();i++){
         double sampson2;
@@ -297,7 +309,7 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
             inliers= inliers + 1;
         }
     }
-    return inliers;
+    return inliers;*/
 }
 
 
@@ -319,6 +331,32 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
     // Draw a random point index with unsigned index = uniformDist(rng);
+    //unsigned index = uniformDist(rng);
+    //cout<<index<<endl;
+    float topin = 0;
+    cv::Matx33f Ff;
+    for (int i = 0; i<numIterations; i++){
+        std::vector<cv::Vec3f> p1s;
+        std::vector<cv::Vec3f> p2s;
+        for (int e =0; e< 8;e++){
+            unsigned  ind = uniformDist(rng);
+            p1s.push_back(p1[ind]);
+            p2s.push_back(p2[ind]);
+        }
+        cv::Matx33d F = getFundamentalMatrix(p1s, p2s);
+        float inly = countInliers(p1s, p2s, F,threshold);
+        if (inly > topin){
+            topin = inly;
+            Ff = F;
+        }
+    }
+
+    return Ff;
+/*    const unsigned subsetSize = 8;
+
+    std::mt19937 rng;
+    std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
+    // Draw a random point index with unsigned index = uniformDist(rng);
     int max_num_inliers = 0;
     cv::Matx33f F_best;
     for(int i=0; i<numIterations;i++){
@@ -335,8 +373,9 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
             max_num_inliers=num_inliers;
             F_best=F;
         }
+        std::cout << max_num_inliers << std::endl;
     }
-    return F_best;
+    return F_best;*/
 }
 
 
