@@ -233,15 +233,7 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
  */
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
-/*    cv::Matx33f cp1 = getCondition2D(p1);
-    cv::Matx33f cp2 = getCondition2D(p2);
-    std::vector<cv::Vec3f> ap2D1 = applyH_2D(p1, cp1, GEOM_TYPE_POINT);
-    std::vector<cv::Vec3f> ap2D2 = applyH_2D(p2, cp2, GEOM_TYPE_POINT);
-    cv::Mat_<float> A = getDesignMatrix_fundamental(ap2D1,ap2D2);
-    cv::Matx33f F_hat = solve_dlt_fundamental(A);
-    cv::Matx33f Fc = forceSingularity(F_hat);
-    cv::Matx33f F = decondition_fundamental(cp1,cp2,Fc);
-    return F;*/
+
     cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
@@ -274,25 +266,19 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
  */
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
+    cv::Matx33f Ft = cv::Matx33f(1, 0, 1,
+                                   0, 1,0,
+                                   0, 0, 1);
+    cv::Vec<float, 1> num_vec = (p2.t() * Ft * p1);
+    float num = pow(num_vec(0),2);
+    float denom1 = std::pow((Ft*p1)(0),2);
+    float denom2 = std::pow((Ft*p1)(1),2);
+    float denom3 = std::pow((Ft.t()*p2)(0),2);
+    float denom4 = std::pow((Ft.t()*p2)(1),2);
+    float denom = denom1+denom2+denom3+denom4;
+    float sampson = num/denom;
 
-/*    cv::Vec3d p1d = p1;
-    cv::Vec3d p2d = p2;
-    cv::Matx33d Fd = F;
-    double d = cv::sampsonDistance(p1d,p2d,Fd);
-    cout<<p1<<endl;
-    return d;*/
-
-    cv::Vec3d p1_double = p1;
-    cv::Vec3d p2_double = p2;
-    cv::Matx33d F_double = F;
-    Vec<float, 1> sampson = (p2.t() * F * p1) * (p2.t() * F * p1)/(
-           (F*p1).val[0]*(F*p1).val[0]+
-            (F*p1).val[1]*(F*p1).val[1]+
-            (F.t()*p2).val[0]*(F.t()*p2).val[0]+
-            (F.t()*p2).val[1]*(F.t()*p2).val[1]);
-    std::cout << "sampson1" << std::endl;
-
-    return sampson.val[0];
+    return sampson;
 }
 
 /**
@@ -342,18 +328,6 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-/*    cv::Matx33d Fd = F;
-    float counter = 0;
-    for (int i = 0; i< p1.size(); i++){
-        double d;
-        cv::Vec3d po1 = p1[i];
-        cv::Vec3d po2 = p2[i];
-        d = cv::sampsonDistance(po1, po2, Fd);
-        if (d < threshold){
-            counter = counter + 1;
-        }
-    }
-    return counter;*/
     cv::Matx33d Fd = F;
     int inliers = 0;
     for (int i=0; i<p1.size();i++){
@@ -368,9 +342,6 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
     return inliers;
 }
 
-
-
-
 /**
  * @brief Estimate the fundamental matrix robustly using RANSAC
  * @details Use the number of inliers as the score
@@ -382,32 +353,6 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
  */
 cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, unsigned numIterations, float threshold)
 {
-/*    const unsigned subsetSize = 8;
-
-    std::mt19937 rng;
-    std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
-    // Draw a random point index with unsigned index = uniformDist(rng);
-    //unsigned index = uniformDist(rng);
-    //cout<<index<<endl;
-    float topin = 0;
-    cv::Matx33f Ff;
-    for (int i = 0; i<numIterations; i++){
-        std::vector<cv::Vec3f> p1s;
-        std::vector<cv::Vec3f> p2s;
-        for (int e =0; e< 8;e++){
-            unsigned  ind = uniformDist(rng);
-            p1s.push_back(p1[ind]);
-            p2s.push_back(p2[ind]);
-        }
-        cv::Matx33d F = getFundamentalMatrix(p1s, p2s);
-        float inly = countInliers(p1s, p2s, F,threshold);
-        if (inly > topin){
-            topin = inly;
-            Ff = F;
-        }
-    }
-
-    return Ff;*/
     const unsigned subsetSize = 8;
 
     std::mt19937 rng;
