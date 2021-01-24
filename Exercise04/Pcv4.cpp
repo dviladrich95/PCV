@@ -54,13 +54,44 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
 {
+/*    std::vector<cv::Vec3f> porigin;
+    float x_sum =0;
+    float y_sum = 0;
+    float x_sum1 =0;
+    float y_sum1 = 0;
+    float tx, ty,sx,sy;
 
+    for(int i = 0;i< points2D.size(); i++){
+        cv::Vec3f point = points2D[i];
+        x_sum = x_sum + point[0];
+        y_sum = y_sum + point[1];
+    }
+    tx = x_sum/points2D.size();
+    ty = y_sum/points2D.size();
+
+    for (int i = 0; i< points2D.size(); i++){
+        float x_tr;
+        float y_tr;
+        cv::Vec3f point = points2D[i];
+        x_tr = point[0] - tx;
+        y_tr = point[1] - ty;
+        cv::Vec3f pointsor(x_tr,y_tr,1);
+        porigin.push_back(pointsor);
+        x_sum1 = x_sum1 + abs(x_tr);
+        y_sum1 = y_sum1 + abs(y_tr);
+    }
+    sx = x_sum1/points2D.size();
+    sy = y_sum1/points2D.size();
+
+    cv::Matx33f cond(1./sx, 0, -tx/sx, 0, 1./sy, -ty/sy, 0, 0, 1);
+
+    return cond;*/
     cv::Vec2f sum_points(0.0,0.0);
     cv::Vec2f mean_point(0.0,0.0);
-    double sum_sx=0.0;
-    double sum_sy=0.0;
-    double sx=0.0;
-    double sy=0.0;
+    float sum_sx=0.0;
+    float sum_sy=0.0;
+    float sx=0.0;
+    float sy=0.0;
 
     for(const auto & point : points2D){
         cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
@@ -92,7 +123,19 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
  */
 cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_conditioned, const std::vector<cv::Vec3f>& p2_conditioned)
 {
-    // TO DO !!!
+/*    cv::Mat A = cv::Mat::zeros(0,9,CV_32F);
+
+    for (int i = 0; i <p1_conditioned.size();i++){
+        cv::Vec3f p1 = p1_conditioned[i];
+        cv::Vec3f p2 = p2_conditioned[i];
+
+        float data[9] = {p1(0)*p2(0),p1(1)*p2(0),p1(2)*p2(0),p1(0)*p2(1),p1(1)*p2(1),p1(2)*p2(1),p1(0)*p2(2),p1(1)*p2(2),p1(2)*p2(2)};
+        cv::Mat pd(1,9,CV_32F,&data);
+
+        A.push_back(pd);
+    }
+    //cout<<A<<endl;
+    return A;*/
     cv::Mat designMat= cv::Mat::zeros(p1_conditioned.size(),9, CV_32FC1);
 
     for (int i=0; i<p1_conditioned.size(); i++){
@@ -139,6 +182,7 @@ cv::Matx33f solve_dlt_fundamental(const cv::Mat_<float>& A)
 }
 
 
+
 /**
  * @brief Enforce rank of 2 on fundamental matrix
  * @param F The matrix to be changed
@@ -172,6 +216,10 @@ cv::Matx33f forceSingularity(const cv::Matx33f& F)
  */
 cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2, const cv::Matx33f& F)
 {
+/*    cv::Matx33f T2t;
+    transpose(T2, T2t);
+    cv::Matx33f Fd =  T2t * F * T1;
+    return Fd;*/
     cv::Matx33f F_decond = T2.t() * F * T1;
     return F_decond;
 }
@@ -185,6 +233,15 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
  */
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
+/*    cv::Matx33f cp1 = getCondition2D(p1);
+    cv::Matx33f cp2 = getCondition2D(p2);
+    std::vector<cv::Vec3f> ap2D1 = applyH_2D(p1, cp1, GEOM_TYPE_POINT);
+    std::vector<cv::Vec3f> ap2D2 = applyH_2D(p2, cp2, GEOM_TYPE_POINT);
+    cv::Mat_<float> A = getDesignMatrix_fundamental(ap2D1,ap2D2);
+    cv::Matx33f F_hat = solve_dlt_fundamental(A);
+    cv::Matx33f Fc = forceSingularity(F_hat);
+    cv::Matx33f F = decondition_fundamental(cp1,cp2,Fc);
+    return F;*/
     cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
@@ -218,15 +275,14 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
 
-
-    cv::Vec3d p1d = p1;
+/*    cv::Vec3d p1d = p1;
     cv::Vec3d p2d = p2;
     cv::Matx33d Fd = F;
     double d = cv::sampsonDistance(p1d,p2d,Fd);
     cout<<p1<<endl;
-    return d;
+    return d;*/
 
-/*    cv::Vec3d p1_double = p1;
+    cv::Vec3d p1_double = p1;
     cv::Vec3d p2_double = p2;
     cv::Matx33d F_double = F;
     Vec<float, 1> sampson = (p2.t() * F * p1) * (p2.t() * F * p1)/(
@@ -236,7 +292,7 @@ float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
             (F.t()*p2).val[1]*(F.t()*p2).val[1]);
     std::cout << "sampson1" << std::endl;
 
-    return sampson.val[0];*/
+    return sampson.val[0];
 }
 
 /**
@@ -286,7 +342,7 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-    cv::Matx33d Fd = F;
+/*    cv::Matx33d Fd = F;
     float counter = 0;
     for (int i = 0; i< p1.size(); i++){
         double d;
@@ -297,8 +353,8 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
             counter = counter + 1;
         }
     }
-    return counter;
-/*    cv::Matx33d Fd = F;
+    return counter;*/
+    cv::Matx33d Fd = F;
     int inliers = 0;
     for (int i=0; i<p1.size();i++){
         double sampson2;
@@ -309,7 +365,7 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
             inliers= inliers + 1;
         }
     }
-    return inliers;*/
+    return inliers;
 }
 
 
@@ -326,7 +382,7 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
  */
 cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, unsigned numIterations, float threshold)
 {
-    const unsigned subsetSize = 8;
+/*    const unsigned subsetSize = 8;
 
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
@@ -351,8 +407,8 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
         }
     }
 
-    return Ff;
-/*    const unsigned subsetSize = 8;
+    return Ff;*/
+    const unsigned subsetSize = 8;
 
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
@@ -373,9 +429,9 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
             max_num_inliers=num_inliers;
             F_best=F;
         }
-        std::cout << max_num_inliers << std::endl;
+        //std::cout << max_num_inliers << std::endl;
     }
-    return F_best;*/
+    return F_best;
 }
 
 

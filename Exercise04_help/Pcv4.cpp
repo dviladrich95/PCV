@@ -119,7 +119,6 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
     cv::Matx33f cond(1./sx, 0, -tx/sx, 0, 1./sy, -ty/sy, 0, 0, 1);
 
     return cond;
-
 }
 
 
