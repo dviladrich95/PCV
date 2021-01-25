@@ -449,8 +449,11 @@ for (const auto &pair : exampleMap) {
 
     for (const auto &pair : rawOrbMatches.matches_1_2) {
 
-        // TO DO !!!
-        // Skip those pairs that don't fulfill the ratio test or cross consistency check
+
+        // Skip those pairs that don't fulfill the ratio test
+        if (pair.second.closestDistance / pair.second.secondClosestDistance>ratio) {continue;}
+        // or cross consistency check
+        if (pair.first != pair.second.closest) {continue;}
 
         p1.push_back(rawOrbMatches.keypoints1[pair.first]);
         p2.push_back(rawOrbMatches.keypoints2[pair.second.closest]);
@@ -467,7 +470,8 @@ for (const auto &pair : exampleMap) {
  */
 void getPointsAutomatic(const cv::Mat &img1, const cv::Mat &img2, std::vector<cv::Vec3f>& p1, std::vector<cv::Vec3f>& p2)
 {
-    // TO DO !!!
+    RawOrbMatches rawOrbMatches = extractRawOrbMatches(img1,img2);
+    filterMatches(rawOrbMatches,p1,p2);
 }
 
 
