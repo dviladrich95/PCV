@@ -216,10 +216,6 @@ cv::Matx33f forceSingularity(const cv::Matx33f& F)
  */
 cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2, const cv::Matx33f& F)
 {
-/*    cv::Matx33f T2t;
-    transpose(T2, T2t);
-    cv::Matx33f Fd =  T2t * F * T1;
-    return Fd;*/
     cv::Matx33f F_decond = T2.t() * F * T1;
     return F_decond;
 }
@@ -233,15 +229,6 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
  */
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
-/*    cv::Matx33f cp1 = getCondition2D(p1);
-    cv::Matx33f cp2 = getCondition2D(p2);
-    std::vector<cv::Vec3f> ap2D1 = applyH_2D(p1, cp1, GEOM_TYPE_POINT);
-    std::vector<cv::Vec3f> ap2D2 = applyH_2D(p2, cp2, GEOM_TYPE_POINT);
-    cv::Mat_<float> A = getDesignMatrix_fundamental(ap2D1,ap2D2);
-    cv::Matx33f F_hat = solve_dlt_fundamental(A);
-    cv::Matx33f Fc = forceSingularity(F_hat);
-    cv::Matx33f F = decondition_fundamental(cp1,cp2,Fc);
-    return F;*/
     cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
@@ -342,18 +329,6 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-/*    cv::Matx33d Fd = F;
-    float counter = 0;
-    for (int i = 0; i< p1.size(); i++){
-        double d;
-        cv::Vec3d po1 = p1[i];
-        cv::Vec3d po2 = p2[i];
-        d = cv::sampsonDistance(po1, po2, Fd);
-        if (d < threshold){
-            counter = counter + 1;
-        }
-    }
-    return counter;*/
     cv::Matx33d Fd = F;
     int inliers = 0;
     for (int i=0; i<p1.size();i++){
@@ -382,32 +357,6 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
  */
 cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, unsigned numIterations, float threshold)
 {
-/*    const unsigned subsetSize = 8;
-
-    std::mt19937 rng;
-    std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
-    // Draw a random point index with unsigned index = uniformDist(rng);
-    //unsigned index = uniformDist(rng);
-    //cout<<index<<endl;
-    float topin = 0;
-    cv::Matx33f Ff;
-    for (int i = 0; i<numIterations; i++){
-        std::vector<cv::Vec3f> p1s;
-        std::vector<cv::Vec3f> p2s;
-        for (int e =0; e< 8;e++){
-            unsigned  ind = uniformDist(rng);
-            p1s.push_back(p1[ind]);
-            p2s.push_back(p2[ind]);
-        }
-        cv::Matx33d F = getFundamentalMatrix(p1s, p2s);
-        float inly = countInliers(p1s, p2s, F,threshold);
-        if (inly > topin){
-            topin = inly;
-            Ff = F;
-        }
-    }
-
-    return Ff;*/
     const unsigned subsetSize = 8;
 
     std::mt19937 rng;
@@ -454,6 +403,28 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     // TO DO !!!
     // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
     // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
+
+
+    for (int i=0; i<p1.size(); i++ ){
+        cv::Vec3f x = p1[i];
+        cv::Vec3f line = F * x;
+        double a = line[0];
+        double b = line[1];
+        double c = line[2];
+
+        drawEpiLine(img2_copy, a, b, c);
+    }
+    for (int j=0; j<p2.size(); j++ ){
+        cv::Vec3f x_p = p1[j];
+        cv::Vec3f line_p = F.t() * x_p;
+        double a1 = line_p[0];
+        double b1 = line_p[1];
+        double c1 = line_p[2];
+
+        drawEpiLine(img1_copy, a1, b1, c1);
+    }
+
+
 
     // show images
     cv::imshow("Epilines img1", img1_copy);
