@@ -69,11 +69,13 @@ int getPointsManual(const cv::Mat &img1, const cv::Mat &img2, std::vector<cv::Ve
     
     // show input images and install mouse callback
     cv::namedWindow( windowInfoBase.name.c_str(), 0 );
+    cv::resizeWindow(windowInfoBase.name.c_str(), 500, 500);
     cv::imshow( windowInfoBase.name.c_str(), windowInfoBase.img );
     cv::setMouseCallback(windowInfoBase.name.c_str(), getPointsCB, (void*) &windowInfoBase);
     
 
     cv::namedWindow( windowInfoAttach.name.c_str(), 0 );
+    cv::resizeWindow(windowInfoAttach.name.c_str(), 500, 500);
     cv::imshow( windowInfoAttach.name.c_str(), windowInfoAttach.img );
     cv::setMouseCallback(windowInfoAttach.name.c_str(), getPointsCB, (void*) &windowInfoAttach);
 

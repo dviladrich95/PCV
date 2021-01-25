@@ -420,7 +420,11 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     }
     
     // show images
+    cv::namedWindow( "Epilines img1", 0 );
+    cv::resizeWindow("Epilines img1", 500, 500);
     cv::imshow("Epilines img1", img1_copy);
+    cv::namedWindow( "Epilines img2", 0 );
+    cv::resizeWindow("Epilines img2", 500, 500);
     cv::imshow("Epilines img2", img2_copy);
 
     cv::waitKey(0);
@@ -470,9 +474,19 @@ for (const auto &pair : exampleMap) {
 
 
         // Skip those pairs that don't fulfill the ratio test
-        if (pair.second.closestDistance / pair.second.secondClosestDistance>ratio) {continue;}
+        float pair_ratio= pair.second.closestDistance / pair.second.secondClosestDistance;
+
+        //if (pair_ratio>ratio) {continue;}
         // or cross consistency check
-        if (pair.first != pair.second.closest) {continue;}
+
+        unsigned match_12_ind=pair.second.closest;
+        auto match_2 = rawOrbMatches.matches_2_1.find(match_12_ind);
+        if (match_2 == rawOrbMatches.matches_2_1.end()) {
+            // no entry in the map
+        } else {
+            unsigned match_21_ind = match_2->second.closest;
+            if (match_21_ind != match_12_ind) {continue;}
+        }
 
         p1.push_back(rawOrbMatches.keypoints1[pair.first]);
         p2.push_back(rawOrbMatches.keypoints2[pair.second.closest]);
