@@ -229,6 +229,7 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
  */
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
+
     cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
@@ -261,25 +262,19 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
  */
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
+    cv::Matx33f Ft = cv::Matx33f(1, 0, 1,
+                                   0, 1,0,
+                                   0, 0, 1);
+    cv::Vec<float, 1> num_vec = (p2.t() * Ft * p1);
+    float num = pow(num_vec(0),2);
+    float denom1 = std::pow((Ft*p1)(0),2);
+    float denom2 = std::pow((Ft*p1)(1),2);
+    float denom3 = std::pow((Ft.t()*p2)(0),2);
+    float denom4 = std::pow((Ft.t()*p2)(1),2);
+    float denom = denom1+denom2+denom3+denom4;
+    float sampson = num/denom;
 
-/*    cv::Vec3d p1d = p1;
-    cv::Vec3d p2d = p2;
-    cv::Matx33d Fd = F;
-    double d = cv::sampsonDistance(p1d,p2d,Fd);
-    cout<<p1<<endl;
-    return d;*/
-
-    cv::Vec3d p1_double = p1;
-    cv::Vec3d p2_double = p2;
-    cv::Matx33d F_double = F;
-    Vec<float, 1> sampson = (p2.t() * F * p1) * (p2.t() * F * p1)/(
-           (F*p1).val[0]*(F*p1).val[0]+
-            (F*p1).val[1]*(F*p1).val[1]+
-            (F.t()*p2).val[0]*(F.t()*p2).val[0]+
-            (F.t()*p2).val[1]*(F.t()*p2).val[1]);
-    std::cout << "sampson1" << std::endl;
-
-    return sampson.val[0];
+    return sampson;
 }
 
 /**
@@ -343,9 +338,6 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
     return inliers;
 }
 
-
-
-
 /**
  * @brief Estimate the fundamental matrix robustly using RANSAC
  * @details Use the number of inliers as the score
@@ -404,6 +396,13 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
     // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
 
+    for (int a=0; a<p1.size();a++){
+        cv::circle(img1_copy, cv::Point2f(p1[a][0], p1[a][1]), 2, cv::Scalar(0, 255, 0), 2);
+    }
+
+    for (int b=0; b<p2.size();b++){
+        cv::circle(img1_copy, cv::Point2f(p2[b][0], p2[b][1]), 2, cv::Scalar(0, 255, 0), 2);
+    }
 
     for (int i=0; i<p1.size(); i++ ){
         cv::Vec3f x = p1[i];
@@ -424,13 +423,16 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
         drawEpiLine(img1_copy, a1, b1, c1);
     }
 
-
-
     // show images
+    cv::namedWindow( "Epilines img1", 0 );
+    cv::resizeWindow("Epilines img1", 500, 500);
     cv::imshow("Epilines img1", img1_copy);
+    cv::namedWindow( "Epilines img2", 0 );
+    cv::resizeWindow("Epilines img2", 500, 500);
     cv::imshow("Epilines img2", img2_copy);
 
     cv::waitKey(0);
+
 }
 
 
@@ -467,7 +469,7 @@ for (const auto &pair : exampleMap) {
 }
 
 **************************************************************************/
-
+    /*
     p1.clear();
     p2.clear();
 
@@ -475,12 +477,15 @@ for (const auto &pair : exampleMap) {
 
     for (const auto &pair : rawOrbMatches.matches_1_2) {
 
-        // TO DO !!!
-        // Skip those pairs that don't fulfill the ratio test or cross consistency check
+
+        // Skip those pairs that don't fulfill the ratio test
+        if (pair.second.closestDistance / pair.second.secondClosestDistance>ratio) {continue;}
+        // or cross consistency check
+        if (pair.first != pair.second.closest) {continue;}
 
         p1.push_back(rawOrbMatches.keypoints1[pair.first]);
         p2.push_back(rawOrbMatches.keypoints2[pair.second.closest]);
-    }
+    } */
 }
 
 /**
@@ -493,7 +498,10 @@ for (const auto &pair : exampleMap) {
  */
 void getPointsAutomatic(const cv::Mat &img1, const cv::Mat &img2, std::vector<cv::Vec3f>& p1, std::vector<cv::Vec3f>& p2)
 {
-    // TO DO !!!
+    /*
+    RawOrbMatches rawOrbMatches = extractRawOrbMatches(img1,img2);
+    filterMatches(rawOrbMatches,p1,p2);
+    */
 }
 
 
