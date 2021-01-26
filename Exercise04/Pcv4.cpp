@@ -432,7 +432,6 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     cv::imshow("Epilines img2", img2_copy);
 
     cv::waitKey(0);
-
 }
 
 
@@ -473,15 +472,32 @@ for (const auto &pair : exampleMap) {
     p1.clear();
     p2.clear();
 
-    const float ratio = 0.75f;
+    unsigned match_size12=rawOrbMatches.matches_1_2.size();
+    unsigned match_size21=rawOrbMatches.matches_2_1.size();
+    cv::Mat match_img = cv::Mat(match_size12,match_size21, CV_8UC3, cv::Scalar(0, 0, 0));
 
+
+
+    const float ratio = 0.75f;
     for (const auto &pair : rawOrbMatches.matches_1_2) {
 
 
         // Skip those pairs that don't fulfill the ratio test
-        if (pair.second.closestDistance / pair.second.secondClosestDistance>ratio) {continue;}
+        float pair_ratio= pair.second.closestDistance / pair.second.secondClosestDistance;
+
+        if (pair_ratio>ratio) {continue;}
         // or cross consistency check
-        if (pair.first != pair.second.closest) {continue;}
+
+        unsigned match_12_ind=pair.second.closest;
+        auto match_2 = rawOrbMatches.matches_2_1.find(match_12_ind);
+        if (match_2 == rawOrbMatches.matches_2_1.end()) {
+            // no entry in the map
+        } else {
+            unsigned match_21_ind = match_2->second.closest;
+            std::cout << match_21_ind << "  " << pair.first << std::endl;
+            if (match_21_ind != pair.first) {continue;}
+
+        }
 
         p1.push_back(rawOrbMatches.keypoints1[pair.first]);
         p2.push_back(rawOrbMatches.keypoints2[pair.second.closest]);
