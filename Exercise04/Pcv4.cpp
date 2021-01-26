@@ -400,6 +400,14 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
     // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
     
+    for (int a=0; a<p1.size();a++){
+        cv::circle(img1_copy, cv::Point2f(p1[a][0], p1[a][1]), 2, cv::Scalar(0, 255, 0), 2);
+    }
+
+    for (int b=0; b<p2.size();b++){
+        cv::circle(img1_copy, cv::Point2f(p2[b][0], p2[b][1]), 2, cv::Scalar(0, 255, 0), 2);
+    }
+    
     for (int i=0; i<p1.size(); i++ ){
         cv::Vec3f x = p1[i];
         cv::Vec3f line = F * x;
