@@ -400,10 +400,7 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
     // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
     
-    for (int a=0; a<p1.size();a++){
-        cv::circle(img1_copy, cv::Point2f(p1[a][0], p1[a][1]), 2, cv::Scalar(0, 255, 0), 2);
-        cv::circle(img2_copy, cv::Point2f(p2[a][0], p2[a][1]), 2, cv::Scalar(0, 255, 0), 2);
-    }
+
     
     for (int i=0; i<p1.size(); i++ ){
         cv::Vec3f x = p1[i];
@@ -415,13 +412,19 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
         drawEpiLine(img2_copy, a, b, c);
     }
     for (int j=0; j<p2.size(); j++ ){
-        cv::Vec3f x_p = p1[j];
+        //cv::Vec3f x_p = p1[j];
+        cv::Vec3f x_p = p2[j];
         cv::Vec3f line_p = F.t() * x_p;
         double a1 = line_p[0];
         double b1 = line_p[1];
         double c1 = line_p[2];
 
         drawEpiLine(img1_copy, a1, b1, c1);
+    }
+
+    for (int a=0; a<p1.size();a++){
+        cv::circle(img1_copy, cv::Point2f(p1[a][0]/p1[a][2], p1[a][1]/p1[a][2]), 2, cv::Scalar(0, 255, 0), 2);
+        cv::circle(img2_copy, cv::Point2f(p2[a][0]/p2[a][2], p2[a][1]/p2[a][2]), 2, cv::Scalar(0, 255, 0), 2);
     }
     
     // show images
@@ -487,15 +490,15 @@ for (const auto &pair : exampleMap) {
         float pair_ratio= pair.second.closestDistance / pair.second.secondClosestDistance;
 
         if (pair_ratio>ratio) {continue;}
-        // or cross consistency check
 
+        // or cross consistency check
         unsigned match_12_ind=pair.second.closest;
         auto match_2 = rawOrbMatches.matches_2_1.find(match_12_ind);
         if (match_2 == rawOrbMatches.matches_2_1.end()) {
             // no entry in the map
+            continue;
         } else {
             unsigned match_21_ind = match_2->second.closest;
-            std::cout << match_21_ind << "  " << pair.first << std::endl;
             if (match_21_ind != pair.first) {continue;}
 
         }
