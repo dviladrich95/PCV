@@ -18,6 +18,7 @@ namespace pcv5 {
 
 
     
+
 /**
  * @brief Applies a 2D transformation to an array of points or lines
  * @param H Matrix representing the transformation
@@ -27,9 +28,26 @@ namespace pcv5 {
  */
 std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, const cv::Matx33f &H, GeometryType type)
 {
-    // TO DO !!!
-    return {};
+
+    std::vector<cv::Vec3f> result;
+    switch (type) {
+        case GEOM_TYPE_POINT: {
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H*geomObjects[i]);
+            }
+        } break;
+        case GEOM_TYPE_LINE: {
+            for(int i=0;i<geomObjects.size();i++){
+                result.push_back(H.inv().t()*geomObjects[i]);
+            }
+        } break;
+        default:
+            throw std::runtime_error("Unhandled geometry type!");
+    }
+    return result;
+
 }
+
 
 /**
  * @brief Get the conditioning matrix of given points
@@ -38,8 +56,32 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
 {
-    // TO DO !!!
-    return cv::Matx33f::eye();
+cv::Vec2f sum_points(0.0,0.0);
+    cv::Vec2f mean_point(0.0,0.0);
+    float sum_sx=0.0;
+    float sum_sy=0.0;
+    float sx=0.0;
+    float sy=0.0;
+
+    for(const auto & point : points2D){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        sum_points=sum_points+point_eucl;
+    }
+    mean_point=sum_points/float(points2D.size());
+
+    for(const auto & point : points2D){
+        cv::Vec2f point_eucl=cv::Vec2f(point[0]/point[2],point[1]/point[2]);
+        cv::Vec2f point_eucl_new=point_eucl-mean_point;
+
+        sum_sx =sum_sx+cv::abs(point_eucl_new[0]);
+        sum_sy=sum_sy+cv::abs(point_eucl_new[1]);
+    }
+    sx=sum_sx/float(points2D.size());
+    sy=sum_sy/float(points2D.size());
+    cv::Matx33f condition_matrix2D=cv::Matx33f(1.0/sx,0,-mean_point[0]/sx,
+                                               0,1.0/sy,-mean_point[1]/sy,
+                                               0,0,1);
+    return condition_matrix2D;
 }
 
 
@@ -51,19 +93,54 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
  */
 std::vector<cv::Vec4f> applyH_3D_points(const std::vector<cv::Vec4f>& geomObjects, const cv::Matx44f &H)
 {
-    // TO DO !!!
-    return {};
+    std::vector<cv::Vec4f> result;
+    for(const auto & geomObject : geomObjects){
+        result.push_back(H*geomObject);
+    }
+    return result;
 }
-
 /**
  * @brief Get the conditioning matrix of given points
  * @param p The points as matrix
- * @returns The condition matrix 
+ * @returns The condition matrix
  */
 cv::Matx44f getCondition3D(const std::vector<cv::Vec4f>& points3D)
 {
-    // TO DO !!!
-    return cv::Matx44f::eye();
+    cv::Vec3f sum_points(0.0,0.0,0.0);
+    cv::Vec3f mean_point(0.0,0.0,0.0);
+    double sum_sx=0.0;
+    double sum_sy=0.0;
+    double sum_sz=0.0;
+    double sx=0.0;
+    double sy=0.0;
+    double sz=0.0;
+
+    for(const auto & point : points3D){
+        cv::Vec3f point_eucl=cv::Vec3f(point[0]/point[3],
+                                       point[1]/point[3],
+                                       point[2]/point[3]);
+        sum_points=sum_points+point_eucl;
+    }
+    mean_point=sum_points/float(points3D.size());
+
+    for(const auto & point : points3D){
+        cv::Vec3f point_eucl=cv::Vec3f(point[0]/point[3],
+                                       point[1]/point[3],
+                                       point[2]/point[3]);
+        cv::Vec3f point_eucl_new=point_eucl-mean_point;
+
+        sum_sx =sum_sx+cv::abs(point_eucl_new[0]);
+        sum_sy=sum_sy+cv::abs(point_eucl_new[1]);
+        sum_sz=sum_sz+cv::abs(point_eucl_new[2]);
+    }
+    sx=sum_sx/float(points3D.size());
+    sy=sum_sy/float(points3D.size());
+    sz=sum_sz/float(points3D.size());
+    cv::Matx44f condition_matrix3D=cv::Matx44f(1.0/sx,0,0,-mean_point[0]/sx,
+                                             0,1.0/sy,0,-mean_point[1]/sy,
+                                             0,0,1.0/sz,-mean_point[2]/sz,
+                                             0,0,0,1);
+    return condition_matrix3D;
 }
 
 
@@ -79,8 +156,33 @@ cv::Matx44f getCondition3D(const std::vector<cv::Vec4f>& points3D)
  */
 cv::Mat_<float> getDesignMatrix_camera(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
-    // TO DO !!!
-    return cv::Mat_<float>(2*points2D.size(), 12);
+       cv::Mat designMat= cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+for (int i=0; i<points2D.size(); i++){
+
+    int a= i*2;
+    //-W*X
+    designMat.at<float>(a,0)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMat.at<float>(a,1)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMat.at<float>(a,2)=(-points2D[i][2]*points3D[i][2]);//-w'*w
+    designMat.at<float>(a,3)=(-points2D[i][2]*points3D[i][3]);//-w*z
+    //u'*u
+    designMat.at<float>(a,8)=points2D[i][0]*points3D[i][0];//u'*u
+    designMat.at<float>(a,9)=points2D[i][0]*points3D[i][1];//u'*v
+    designMat.at<float>(a,10)=points2D[i][0]*points3D[i][2];//u'*w
+    designMat.at<float>(a,11)=points2D[i][0]*points3D[i][3];//u*z
+    //-W*X
+    designMat.at<float>(a+1,4)=(-points2D[i][2]*points3D[i][0]);//-w'*u
+    designMat.at<float>(a+1,5)=(-points2D[i][2]*points3D[i][1]);//-w'*v
+    designMat.at<float>(a+1,6)=(-points2D[i][2]*points3D[i][2]);
+    designMat.at<float>(a+1,7)=(-points2D[i][2]*points3D[i][3]);//-w'*w
+
+    //v'*u
+    designMat.at<float>(a+1,8)=points2D[i][1]*points3D[i][0];//v'*u
+    designMat.at<float>(a+1,9)=points2D[i][1]*points3D[i][1];//v'*v
+    designMat.at<float>(a+1,10)=points2D[i][1]*points3D[i][2];//v'*w
+    designMat.at<float>(a+1,11)=points2D[i][1]*points3D[i][3];
+  }
+    return designMat;
 }
 
 /**
@@ -90,8 +192,22 @@ cv::Mat_<float> getDesignMatrix_camera(const std::vector<cv::Vec3f>& points2D, c
  */
 cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
 {
-    // TO DO !!!
-    return cv::Matx34f::eye();
+        cv::SVD svd(A,cv::SVD::FULL_UV);
+        cv::Mat_<float> P = cv::Mat_<float>::zeros(3,4);
+
+        P.at<float>(0,0) = svd.vt.at<float>(11,0);
+        P.at<float>(0,1) = svd.vt.at<float>(11,1);
+        P.at<float>(0,2) = svd.vt.at<float>(11,2);
+        P.at<float>(0,3) = svd.vt.at<float>(11,3);
+        P.at<float>(1,0) = svd.vt.at<float>(11,4);
+        P.at<float>(1,1) = svd.vt.at<float>(11,5);
+        P.at<float>(1,2) = svd.vt.at<float>(11,6);
+        P.at<float>(1,3) = svd.vt.at<float>(11,7);
+        P.at<float>(2,0) = svd.vt.at<float>(11,8);
+        P.at<float>(2,1) = svd.vt.at<float>(11,9);
+        P.at<float>(2,2) = svd.vt.at<float>(11,10);
+        P.at<float>(2,3) = svd.vt.at<float>(11,11);
+        return P;
 }
 
 /**
@@ -102,8 +218,8 @@ cv::Matx34f solve_dlt_camera(const cv::Mat_<float>& A)
  */
 cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D, const cv::Matx34f& P)
 {
-    // TO DO !!!
-    return P;
+    cv::Matx34f D= (T_2D.inv()) * P * T_3D;
+    return D;
 }
 
 /**
@@ -114,8 +230,24 @@ cv::Matx34f decondition_camera(const cv::Matx33f& T_2D, const cv::Matx44f& T_3D,
  */
 cv::Matx34f calibrate(const std::vector<cv::Vec3f>& points2D, const std::vector<cv::Vec4f>& points3D)
 {
-    // TO DO !!!
-    return cv::Matx34f::eye();
+    std::vector<cv::Vec3f>(c_P2D);
+    std::vector<cv::Vec4f>(c_P3D);
+
+
+    cv::Matx33f P2D = getCondition2D(points2D);
+    cv::Matx44f P3D = getCondition3D(points3D);
+
+    c_P2D = applyH_2D(points2D, P2D, GEOM_TYPE_POINT);
+    c_P3D = applyH_3D_points(points3D,P3D);
+
+    cv::Mat DMA = cv::Mat::zeros(2*points2D.size(),12, CV_32FC1);
+    DMA = getDesignMatrix_camera(c_P2D,c_P3D);
+
+    cv::Matx34f dlt = solve_dlt_camera(DMA);
+
+    cv::Matx34f Hom = decondition_camera(P2D, P3D, dlt);
+
+    return Hom;
 }
 
 /**
@@ -127,8 +259,91 @@ cv::Matx34f calibrate(const std::vector<cv::Vec3f>& points2D, const std::vector<
  */
 void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, ProjectionMatrixInterpretation &info)
 {
-    // TO DO !!!
+    cv::Matx33f M=cv::Matx33f(P.val[0], P.val[1], P.val[2],
+                              P.val[4], P.val[5], P.val[6],
+                              P.val[8], P.val[9], P.val[10]);
+
+    float lambda = cv::determinant(M)/std::abs(cv::determinant(M))*1/cv::norm(M.row(2));
+
+
+    cv::Matx33f d1=cv::Matx33f(-1, 0, 0,
+                              0, 1, 0,
+                              0, 0, 1);
+
+    cv::Matx33f d2=cv::Matx33f(-1, 0, 0,
+                               0, 1, 0,
+                               0, 0, 1);
+
+    cv::Matx33f d3=cv::Matx33f(-1, 0, 0,
+                               0, 1, 0,
+                               0, 0, 1);
+
+    cv::Matx33f M_norm = M*lambda;
+    cv::RQDecomp3x3(M_norm, K, R);
+
+    if (K.val[0]<0){
+        cv::Matx33f K= K.mul(d1);
+        cv::Matx33f R= R.mul(d1);
+    }
+    if (K.val[4]<0){
+        cv::Matx33f K= K.mul(d2);
+        cv::Matx33f R= R.mul(d2);
+    }
+    if (K.val[8]<0){
+        cv::Matx33f K= K.mul(d3);
+        cv::Matx33f R= R.mul(d3);
+    }
+
+    //cv::Matx31f C = -M_norm.inv()*(P.col(3)*lambda);
+
+    cv::SVD svd(P,cv::SVD::FULL_UV);
+    cv::Mat_<float> C = cv::Mat_<float>::zeros(1,4);
+
+
+    C.at<float>(0,0) = svd.vt.at<float>(3,0);
+    C.at<float>(0,1) = svd.vt.at<float>(3,1);
+    C.at<float>(0,2) = svd.vt.at<float>(3,2);
+    C.at<float>(0,3) = svd.vt.at<float>(3,3);
+
+    std::cout << C << std::endl;
+
+    cv::Matx31f C_norm = cv::Matx31f(C[0][0]/C[0][3], C[0][1]/C[0][3], C[0][2]/C[0][3]);
+    std::cout << C_norm << std::endl;
+
+
+
+    // Principal distance or focal length
+    info.principalDistance = K.val[0];
+
+    // Skew as an angle and in degrees
+    info.skew = std::atan2(K.val[0],-K.val[1])*360/(2*M_PI);
+
+    // Aspect ratio of the pixels
+    info.aspectRatio = K.val[4]/K.val[0];
+
+    // Location of principal point in image (pixel) coordinates
+    info.principalPoint(0) = K.val[2];
+    info.principalPoint(1) = K.val[5];
+
+    // Camera rotation angle 1/3
+    info.omega = std::atan2(-R.val[7],R.val[8])*360/(2*M_PI);
+
+    // Camera rotation angle 2/3
+    info.phi = std::asin(R.val[6])*360/(2*M_PI);
+
+    // Camera rotation angle 3/3
+    info.kappa = std::atan2(-R.val[3],R.val[0])*360/(2*M_PI);
+
+    // 3D camera location in world coordinates
+    info.cameraLocation(0) = C_norm.val[0];
+    info.cameraLocation(1) = C_norm.val[1];
+    info.cameraLocation(2) = C_norm.val[2];
+
 }
+
+
+
+
 
 
 
@@ -141,11 +356,24 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
  * @returns The design matrix to be computed
  */
 cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_conditioned, const std::vector<cv::Vec3f>& p2_conditioned)
-{
-    // TO DO !!!
-    return cv::Mat_<float>();
-}
+ {
+ cv::Mat designMat= cv::Mat::zeros(p1_conditioned.size(),9, CV_32FC1);
 
+    for (int i=0; i<p1_conditioned.size(); i++){
+        designMat.at<float>(i,0)=(p1_conditioned[i][0]*p2_conditioned[i][0]);//x*x'
+        designMat.at<float>(i,1)=(p1_conditioned[i][1]*p2_conditioned[i][0]);//y*x'
+        designMat.at<float>(i,2)=(p1_conditioned[i][2]*p2_conditioned[i][0]);//w*x'
+        designMat.at<float>(i,3)=(p1_conditioned[i][0]*p2_conditioned[i][1]);//x*y'
+        designMat.at<float>(i,4)=(p1_conditioned[i][1]*p2_conditioned[i][1]);//y*y'
+        designMat.at<float>(i,5)=(p1_conditioned[i][2]*p2_conditioned[i][1]);//w*y'
+        designMat.at<float>(i,6)=(p1_conditioned[i][0]*p2_conditioned[i][2]);//x*w'
+        designMat.at<float>(i,7)=(p1_conditioned[i][1]*p2_conditioned[i][2]);//y*w'
+        designMat.at<float>(i,8)=(p1_conditioned[i][2]*p2_conditioned[i][2]);//w*w'
+
+    }
+
+    return designMat;
+}
 
 
 /**
@@ -155,8 +383,23 @@ cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_con
  */
 cv::Matx33f solve_dlt_fundamental(const cv::Mat_<float>& A)
 {
-    // TO DO !!!
-    return cv::Matx33f::zeros();
+
+    cv::SVD svd(A,cv::SVD::FULL_UV);
+    cv::Mat_<float> F = cv::Mat_<float>::zeros(3,3);
+    //std::cout << svd.w << std::endl;
+    //std::cout << svd.vt << std::endl;
+
+    F.at<float>(0,0) = svd.vt.at<float>(8,0);
+    F.at<float>(0,1) = svd.vt.at<float>(8,1);
+    F.at<float>(0,2) = svd.vt.at<float>(8,2);
+    F.at<float>(1,0) = svd.vt.at<float>(8,3);
+    F.at<float>(1,1) = svd.vt.at<float>(8,4);
+    F.at<float>(1,2) = svd.vt.at<float>(8,5);
+    F.at<float>(2,0) = svd.vt.at<float>(8,6);
+    F.at<float>(2,1) = svd.vt.at<float>(8,7);
+    F.at<float>(2,2) = svd.vt.at<float>(8,8);
+
+    return F;
 }
 
 
@@ -167,10 +410,21 @@ cv::Matx33f solve_dlt_fundamental(const cv::Mat_<float>& A)
  */
 cv::Matx33f forceSingularity(const cv::Matx33f& F)
 {
-    // TO DO !!!
-    return F;
-}
+    cv::SVD svd(F,cv::SVD::FULL_UV);
+    //std::cout << svd.u << std::endl;
+    //std::cout << svd.w << std::endl;
+    //std::cout << svd.vt << std::endl;
 
+    cv::Matx33f u = svd.u;
+    cv::Matx33f vt = svd.vt;
+    cv::Matx33f diag = cv::Matx33f(svd.w.at<float>(0,0), 0, 0,
+                                   0, svd.w.at<float>(0,1),0,
+                                   0, 0, 0);
+
+    cv::Matx33f F_forced = u * diag * vt;
+
+    return F_forced;
+}
 /**
  * @brief Decondition a fundamental matrix that was estimated from conditioned points
  * @param T1 Conditioning matrix of set of 2D image points
@@ -181,7 +435,8 @@ cv::Matx33f forceSingularity(const cv::Matx33f& F)
 cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2, const cv::Matx33f& F)
 {
     // TO DO !!!
-    return F;
+    cv::Matx33f F_decond = T2.t() * F * T1;
+    return F_decond;
 }
 
 
@@ -194,9 +449,25 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
     // TO DO !!!
-    return cv::Matx33f::eye();
-}
+  cv::Matx33f p1_cond = getCondition2D(p1);
+    cv::Matx33f p2_cond = getCondition2D(p2);
 
+    std::vector<cv::Vec3f> c_p1;
+    std::vector<cv::Vec3f> c_p2;
+
+    c_p1 = applyH_2D(p1, p1_cond, GEOM_TYPE_POINT);
+    c_p2 = applyH_2D(p2, p2_cond, GEOM_TYPE_POINT);
+
+    cv::Mat_<float> DesignMat = getDesignMatrix_fundamental(c_p1, c_p2);
+
+    cv::Matx33f dlt = solve_dlt_fundamental(DesignMat);
+
+    cv::Matx33f force_dlt = forceSingularity(dlt);
+
+    cv::Matx33f F = decondition_fundamental(p1_cond, p2_cond, force_dlt);
+    return F;
+
+}
 
 
 /**
@@ -209,10 +480,21 @@ cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::ve
  */
 float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
 {
-    // TO DO !!!
-    return 0.0f;
-}
 
+    cv::Matx33f Ft = cv::Matx33f(1, 0, 1,
+                                   0, 1,0,
+                                   0, 0, 1);
+    cv::Vec<float, 1> num_vec = (p2.t() * Ft * p1);
+    float num = pow(num_vec(0),2);
+    float denom1 = std::pow((Ft*p1)(0),2);
+    float denom2 = std::pow((Ft*p1)(1),2);
+    float denom3 = std::pow((Ft.t()*p2)(0),2);
+    float denom4 = std::pow((Ft.t()*p2)(1),2);
+    float denom = denom1+denom2+denom3+denom4;
+    float sampson = num/denom;
+
+    return sampson;
+}
 /**
  * @brief Calculate geometric error of estimated fundamental matrix for a set of point pairs
  * @details Implement the mean "Sampson distance"
@@ -223,10 +505,19 @@ float getError(const cv::Vec3f& p1, const cv::Vec3f& p2, const cv::Matx33f& F)
  */
 float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F)
 {
-    // TO DO !!!
-    return 0.0f;
-}
 
+    double totd = 0;
+    cv::Matx33d Fd = F;
+    for (int i = 0; i< p1.size(); i++){
+        double d;
+        cv::Vec3d po1 = p1[i];
+        cv::Vec3d po2 = p2[i];
+        d = cv::sampsonDistance(po1, po2, Fd);
+        totd = totd + d;
+    }
+    double md = totd/(p1.size());
+    return md;
+    }
 /**
  * @brief Count the number of inliers of an estimated fundamental matrix
  * @param p1		first set of points
@@ -237,8 +528,18 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
  */
 unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, const cv::Matx33f& F, float threshold)
 {
-    // TO DO !!!
-    return 0;
+     cv::Matx33d Fd = F;
+    int inliers = 0;
+    for (int i=0; i<p1.size();i++){
+        double sampson2;
+        cv::Vec3d p1_d = p1[i];
+        cv::Vec3d p2_d = p2[i];
+        sampson2 = cv::sampsonDistance(p1_d, p2_d, Fd);
+        if (sampson2<=threshold){
+            inliers= inliers + 1;
+        }
+    }
+    return inliers;
 }
 
 
@@ -254,15 +555,30 @@ unsigned countInliers(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Ve
 cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2, unsigned numIterations, float threshold)
 {
     const unsigned subsetSize = 8;
-    
+
     std::mt19937 rng;
     std::uniform_int_distribution<unsigned> uniformDist(0, p1.size()-1);
     // Draw a random point index with unsigned index = uniformDist(rng);
-    
-    // TO DO !!!
-    return cv::Matx33f::eye();
+    int max_num_inliers = 0;
+    cv::Matx33f F_best;
+    for(int i=0; i<numIterations;i++){
+        std::vector<cv::Vec3f> p1_sample;
+        std::vector<cv::Vec3f> p2_sample;
+        for( int j=0;j<subsetSize;j++){
+            unsigned index = uniformDist(rng);
+            p1_sample.push_back(p1[index]);
+            p2_sample.push_back(p2[index]);
+        }
+        cv::Matx33f F = getFundamentalMatrix(p1_sample,p2_sample);
+        int num_inliers = countInliers(p1_sample,p2_sample,F,threshold);
+        if(num_inliers>max_num_inliers){
+            max_num_inliers=num_inliers;
+            F_best=F;
+        }
+        //std::cout << max_num_inliers << std::endl;
+    }
+    return F_best;
 }
-
 
 
 
@@ -278,11 +594,34 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
  * @param K Internal calibration matrix
  * @returns External calibration matrix of second camera
  */
-cv::Matx44f computeCameraPose(const cv::Matx33f &K, const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
+cv::Matx44f computeCameraPose(const cv::Matx33f &K, const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& px2)
 {
-    // TO DO !!!
 
-    return cv::Matx44f::eye();
+cv::Matx33f F=getFundamentalMatrix(p1,px2);
+
+cv::Matx33f ES= K.t() *F *K;
+    
+cv::Matx33f R1,R2;
+cv::Matx31f t;
+cv::decomposeEssentialMat(ES,R1,R2,t);
+
+cv::Mat_<float> EX = cv::Mat_<float>::zeros(4,4);
+    EX.at<float>(0,0) = R1(0,0);
+    EX.at<float>(0,1) = R1(0,1);
+    EX.at<float>(0,2) = R1(0,2);
+    EX.at<float>(0,3) = t(0,0);
+    EX.at<float>(1,0) = R1(1,0);
+    EX.at<float>(1,1) = R1(1,1);
+    EX.at<float>(1,2) = R1(1,2);
+    EX.at<float>(1,3) = t(0,1);
+    EX.at<float>(2,0) = R1(2,0);
+    EX.at<float>(2,1) = R1(2,1);
+    EX.at<float>(2,2) = R1(2,2);
+    EX.at<float>(2,3) = t(0,2);
+    EX.at<float>(3,3) = 1;
+    return EX;
+
+
 }
 
 
