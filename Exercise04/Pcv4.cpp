@@ -54,38 +54,7 @@ std::vector<cv::Vec3f> applyH_2D(const std::vector<cv::Vec3f>& geomObjects, cons
  */
 cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
 {
-/*    std::vector<cv::Vec3f> porigin;
-    float x_sum =0;
-    float y_sum = 0;
-    float x_sum1 =0;
-    float y_sum1 = 0;
-    float tx, ty,sx,sy;
 
-    for(int i = 0;i< points2D.size(); i++){
-        cv::Vec3f point = points2D[i];
-        x_sum = x_sum + point[0];
-        y_sum = y_sum + point[1];
-    }
-    tx = x_sum/points2D.size();
-    ty = y_sum/points2D.size();
-
-    for (int i = 0; i< points2D.size(); i++){
-        float x_tr;
-        float y_tr;
-        cv::Vec3f point = points2D[i];
-        x_tr = point[0] - tx;
-        y_tr = point[1] - ty;
-        cv::Vec3f pointsor(x_tr,y_tr,1);
-        porigin.push_back(pointsor);
-        x_sum1 = x_sum1 + abs(x_tr);
-        y_sum1 = y_sum1 + abs(y_tr);
-    }
-    sx = x_sum1/points2D.size();
-    sy = y_sum1/points2D.size();
-
-    cv::Matx33f cond(1./sx, 0, -tx/sx, 0, 1./sy, -ty/sy, 0, 0, 1);
-
-    return cond;*/
     cv::Vec2f sum_points(0.0,0.0);
     cv::Vec2f mean_point(0.0,0.0);
     float sum_sx=0.0;
@@ -123,19 +92,7 @@ cv::Matx33f getCondition2D(const std::vector<cv::Vec3f>& points2D)
  */
 cv::Mat_<float> getDesignMatrix_fundamental(const std::vector<cv::Vec3f>& p1_conditioned, const std::vector<cv::Vec3f>& p2_conditioned)
 {
-/*    cv::Mat A = cv::Mat::zeros(0,9,CV_32F);
 
-    for (int i = 0; i <p1_conditioned.size();i++){
-        cv::Vec3f p1 = p1_conditioned[i];
-        cv::Vec3f p2 = p2_conditioned[i];
-
-        float data[9] = {p1(0)*p2(0),p1(1)*p2(0),p1(2)*p2(0),p1(0)*p2(1),p1(1)*p2(1),p1(2)*p2(1),p1(0)*p2(2),p1(1)*p2(2),p1(2)*p2(2)};
-        cv::Mat pd(1,9,CV_32F,&data);
-
-        A.push_back(pd);
-    }
-    //cout<<A<<endl;
-    return A;*/
     cv::Mat designMat= cv::Mat::zeros(p1_conditioned.size(),9, CV_32FC1);
 
     for (int i=0; i<p1_conditioned.size(); i++){
@@ -299,19 +256,6 @@ float getError(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p
     double md = totd/(p1.size());
     return md;
 
-/*    double sum = 0;
-    for (int i=0; i<p1.size();i++){
-        double sampson2;
-        sampson2 = getError(p2[i], p1[i], F);
-        std::cout << sampson2 << std::endl;
-        sum += sampson2;
-    }
-
-    double d = sum/p1.size();
-    std::cout << "sampson2" << std::endl;
-
-    return d;*/
-
 }
 
 /**
@@ -392,18 +336,6 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
     cv::Mat img1_copy = img1.clone();
     cv::Mat img2_copy = img2.clone();
 
-    // TO DO !!!
-    // Compute epilines for both images and draw them with drawEpiLine() into img1_copy and img2_copy respectively
-    // Use cv::circle(image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), 2); to draw the points.
-
-    for (int a=0; a<p1.size();a++){
-        cv::circle(img1_copy, cv::Point2f(p1[a][0], p1[a][1]), 2, cv::Scalar(0, 255, 0), 2);
-    }
-
-    for (int b=0; b<p2.size();b++){
-        cv::circle(img1_copy, cv::Point2f(p2[b][0], p2[b][1]), 2, cv::Scalar(0, 255, 0), 2);
-    }
-
     for (int i=0; i<p1.size(); i++ ){
         cv::Vec3f x = p1[i];
         cv::Vec3f line = F * x;
@@ -414,13 +346,19 @@ void visualize(const cv::Mat& img1, const cv::Mat& img2, const std::vector<cv::V
         drawEpiLine(img2_copy, a, b, c);
     }
     for (int j=0; j<p2.size(); j++ ){
-        cv::Vec3f x_p = p1[j];
+        //cv::Vec3f x_p = p1[j];
+        cv::Vec3f x_p = p2[j];
         cv::Vec3f line_p = F.t() * x_p;
         double a1 = line_p[0];
         double b1 = line_p[1];
         double c1 = line_p[2];
 
         drawEpiLine(img1_copy, a1, b1, c1);
+    }
+
+    for (int a=0; a<p1.size();a++){
+        cv::circle(img1_copy, cv::Point2f(p1[a][0]/p1[a][2], p1[a][1]/p1[a][2]), 2, cv::Scalar(0, 255, 0), 2);
+        cv::circle(img2_copy, cv::Point2f(p2[a][0]/p2[a][2], p2[a][1]/p2[a][2]), 2, cv::Scalar(0, 255, 0), 2);
     }
 
     // show images
@@ -468,7 +406,7 @@ for (const auto &pair : exampleMap) {
 }
 
 **************************************************************************/
-    /*
+
     p1.clear();
     p2.clear();
 
@@ -478,7 +416,7 @@ for (const auto &pair : exampleMap) {
 
 
 
-    const float ratio = 0.75f;
+    const float ratio = 0.4f;
     for (const auto &pair : rawOrbMatches.matches_1_2) {
 
 
@@ -486,22 +424,22 @@ for (const auto &pair : exampleMap) {
         float pair_ratio= pair.second.closestDistance / pair.second.secondClosestDistance;
 
         if (pair_ratio>ratio) {continue;}
-        // or cross consistency check
 
+        // or cross consistency check
         unsigned match_12_ind=pair.second.closest;
         auto match_2 = rawOrbMatches.matches_2_1.find(match_12_ind);
         if (match_2 == rawOrbMatches.matches_2_1.end()) {
             // no entry in the map
+            continue;
         } else {
             unsigned match_21_ind = match_2->second.closest;
-            std::cout << match_21_ind << "  " << pair.first << std::endl;
             if (match_21_ind != pair.first) {continue;}
 
         }
 
         p1.push_back(rawOrbMatches.keypoints1[pair.first]);
         p2.push_back(rawOrbMatches.keypoints2[pair.second.closest]);
-    } */
+    }
 }
 
 /**
@@ -514,10 +452,8 @@ for (const auto &pair : exampleMap) {
  */
 void getPointsAutomatic(const cv::Mat &img1, const cv::Mat &img2, std::vector<cv::Vec3f>& p1, std::vector<cv::Vec3f>& p2)
 {
-    /*
     RawOrbMatches rawOrbMatches = extractRawOrbMatches(img1,img2);
     filterMatches(rawOrbMatches,p1,p2);
-    */
 }
 
 
