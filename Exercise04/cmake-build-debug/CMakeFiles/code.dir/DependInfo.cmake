@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/daniel/TU_Berlin/PCV/Exercise04/Helper.cpp" "/home/daniel/TU_Berlin/PCV/Exercise04/cmake-build-debug/CMakeFiles/code.dir/Helper.cpp.o"
-  "/home/daniel/TU_Berlin/PCV/Exercise04/Pcv4.cpp" "/home/daniel/TU_Berlin/PCV/Exercise04/cmake-build-debug/CMakeFiles/code.dir/Pcv4.cpp.o"
+  "/home/andres/CLionProjects/PCV/Exercise04/Helper.cpp" "/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/code.dir/Helper.cpp.o"
+  "/home/andres/CLionProjects/PCV/Exercise04/Pcv4.cpp" "/home/andres/CLionProjects/PCV/Exercise04/cmake-build-debug/CMakeFiles/code.dir/Pcv4.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
