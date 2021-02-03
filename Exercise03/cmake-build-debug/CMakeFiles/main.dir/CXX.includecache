@@ -6,23 +6,23 @@
 
 #IncludeRegexTransform: 
 
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.h
 opencv2/opencv.hpp
 -
 
-/home/andres/CLionProjects/PCV/Exercise03/Pcv3.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Pcv3.h
 Helper.h
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.h
 opencv2/opencv.hpp
 -
 string
 -
 
-/home/andres/CLionProjects/PCV/Exercise03/main.cpp
+/home/daniel/TU_Berlin/PCV/Exercise03/main.cpp
 Pcv3.h
-/home/andres/CLionProjects/PCV/Exercise03/Pcv3.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Pcv3.h
 Helper.h
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.h
 opencv2/opencv.hpp
 -
 iostream

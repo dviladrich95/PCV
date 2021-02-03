@@ -1,4 +1,4 @@
-# Install script for directory: /home/andres/CLionProjects/PCV/Exercise03
+# Install script for directory: /home/daniel/TU_Berlin/PCV/Exercise03
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/andres/CLionProjects/PCV/Exercise03/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/daniel/TU_Berlin/PCV/Exercise03/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

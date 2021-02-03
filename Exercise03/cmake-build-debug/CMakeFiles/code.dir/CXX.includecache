@@ -6,9 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/andres/CLionProjects/PCV/Exercise03/Helper.cpp
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.cpp
 Helper.h
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.h
 vector
 -
 string
@@ -16,20 +16,8 @@ string
 fstream
 -
 
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
+/home/daniel/TU_Berlin/PCV/Exercise03/Helper.h
 opencv2/opencv.hpp
--
-
-/home/andres/CLionProjects/PCV/Exercise03/Pcv3.cpp
-Pcv3.h
-/home/andres/CLionProjects/PCV/Exercise03/Pcv3.h
-
-/home/andres/CLionProjects/PCV/Exercise03/Pcv3.h
-Helper.h
-/home/andres/CLionProjects/PCV/Exercise03/Helper.h
-opencv2/opencv.hpp
--
-string
 -
 
 /usr/include/opencv4/opencv2/calib3d.hpp
