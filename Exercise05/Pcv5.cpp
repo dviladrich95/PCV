@@ -620,7 +620,21 @@ cv::Mat_<float> EX = cv::Mat_<float>::zeros(4,4);
     EX.at<float>(2,3) = t(0,2);
     EX.at<float>(3,3) = 1;
     return EX;
+/*
+    Mat D, U, Vt;
+    SVD::compute(E, D, U, Vt);
 
+    if (determinant(U) < 0) U *= -1.;
+    if (determinant(Vt) < 0) Vt *= -1.;
+
+    Mat W = (Mat_<double>(3, 3) << 0, 1, 0, -1, 0, 0, 0, 0, 1);
+    W.convertTo(W, E.type());
+
+    Mat R1, R2, t;
+    R1 = U * W * Vt;
+    R2 = U * W.t() * Vt;
+    t = U.col(2) * 1.0;
+    */
 
 }
 
