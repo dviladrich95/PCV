@@ -717,6 +717,7 @@ cv::Vec4f linearTriangulation(const cv::Matx34f& P1, const cv::Matx34f& P2, cons
     A(3, 3) = x2(1) * P2(2, 3) - P2(1, 3);
 
     cv::SVD svd(A);
+    //std::cout << svd.vt << std::endl;
     Mat_<float> tmp = svd.vt.row(3).t();
 
     return cv::Vec4f(tmp(0), tmp(1), tmp(2), tmp(3));
@@ -739,29 +740,46 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
     for (unsigned camIdx = 0; camIdx < m_cameras.size(); camIdx++) {
         const auto &calibState = m_internalCalibs[m_scene.cameras[camIdx].internalCalibIdx];
         const auto &cameraState = m_cameras[camIdx];
-        
+
         // TO DO !!!
         // Compute 3x4 camera matrix (composition of internal and external calibration)
         // Internal calibration is calibState.K
         // External calibration is dropLastRow(cameraState.H)
-        
-        cv::Matx34f P ;// = ...
-        
+
+        cv::Matx34f ext = cv::Mat_<float>(3,4);
+        ext(0,0) = cameraState.H(0,0);
+        ext(0,1) = cameraState.H(0,1);
+        ext(0,2) = cameraState.H(0,2);
+        ext(0,3) = cameraState.H(0,3);
+        ext(1,0) = cameraState.H(1,0);
+        ext(1,1) = cameraState.H(1,1);
+        ext(1,1) = cameraState.H(1,2);
+        ext(1,1) = cameraState.H(1,3);
+        ext(2,0) = cameraState.H(2,0);
+        ext(2,1) = cameraState.H(2,1);
+        ext(2,2) = cameraState.H(2,2);
+        ext(2,3) = cameraState.H(2,3);
+
+        cv::Matx34f P = calibState.K * ext;
+
         for (const KeyPoint &kp : m_scene.cameras[camIdx].keypoints) {
             const auto &trackState = m_tracks[kp.trackIdx];
             // TO DO !!!
             // Using P, compute the homogeneous position of the track in the image (world space position is trackState.location)
-            cv::Vec3f projection ;// = ...
-            
+            cv::Vec3f projection = P * trackState.location;
+
             // TO DO !!!
             // Compute the euclidean position of the track
-            
+            cv::Vec3f euclProjection = (projection[0]/projection[3],
+                                        projection[1]/projection[3],
+                                        projection[2]/projection[3]);
+
             // TO DO !!!
             // Compute the residuals: the difference between computed position and real position (kp.location(0) and kp.location(1))
             // Compute and store the (signed!) residual in x direction multiplied by kp.weight
-            // residuals[rIdx++] = ...
+            residuals[rIdx++] = (kp.location(0) - euclProjection(0)) * kp.weight;
             // Compute and store the (signed!) residual in y direction multiplied by kp.weight
-            // residuals[rIdx++] = ...
+            residuals[rIdx++] = (kp.location(1) - euclProjection(1)) * kp.weight;
         }
     }
 }
