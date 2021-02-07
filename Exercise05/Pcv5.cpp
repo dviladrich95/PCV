@@ -620,7 +620,21 @@ cv::Mat_<float> EX = cv::Mat_<float>::zeros(4,4);
     EX.at<float>(2,3) = t(0,2);
     EX.at<float>(3,3) = 1;
     return EX;
+/*
+    Mat D, U, Vt;
+    SVD::compute(E, D, U, Vt);
 
+    if (determinant(U) < 0) U *= -1.;
+    if (determinant(Vt) < 0) Vt *= -1.;
+
+    Mat W = (Mat_<double>(3, 3) << 0, 1, 0, -1, 0, 0, 0, 0, 1);
+    W.convertTo(W, E.type());
+
+    Mat R1, R2, t;
+    R1 = U * W * Vt;
+    R2 = U * W.t() * Vt;
+    t = U.col(2) * 1.0;
+    */
 
 }
 
@@ -787,15 +801,15 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
 void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
 {
     BAJacobiMatrix &J = dynamic_cast<BAJacobiMatrix&>(*dst);
-    
+
     unsigned rIdx = 0;
     for (unsigned camIdx = 0; camIdx < m_cameras.size(); camIdx++) {
         const auto &calibState = m_internalCalibs[m_scene.cameras[camIdx].internalCalibIdx];
         const auto &cameraState = m_cameras[camIdx];
-        
+
         for (const KeyPoint &kp : m_scene.cameras[camIdx].keypoints) {
             const auto &trackState = m_tracks[kp.trackIdx];
-            
+
             // calibState.K is the internal calbration
             // cameraState.H is the external calbration
             // trackState.location is the 3D location of the track in homogeneous coordinates
@@ -830,28 +844,28 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
             J_hom2eucl(1, 1) = 1/u[2];
             J_hom2eucl(1, 2) = -u[1]/(u[2]*u[2]);
 
-            
+
             cv::Matx33f du_dDeltaK;
             // TO DO !!!
             // How do homogeneous image positions change when the internal calibration is changed (the 3 update parameters)?
-            du_dDeltaK(0, 0) = v[0]* calibState.K(0,0);
-            du_dDeltaK(0, 1) = v[2]* calibState.K(0,2);
+            du_dDeltaK(0, 0) = v[0]*calibState.K(0,0);
+            du_dDeltaK(0, 1) = v[2]*calibState.K(0,2);
             du_dDeltaK(0, 2) = 0;
-            du_dDeltaK(1, 0) = v[1] * calibState.K(1,1);
+            du_dDeltaK(1, 0) = v[1]*calibState.K(1,1);
             du_dDeltaK(1, 1) = 0;
-            du_dDeltaK(1, 2) = v[2] * calibState.K(1,2);
+            du_dDeltaK(1, 2) = v[2]*calibState.K(1,2);
             du_dDeltaK(2, 0) = 0;
             du_dDeltaK(2, 1) = 0;
             du_dDeltaK(2, 2) = 0;
 
-            
-            
+
+
             // TO DO !!!
             // Using the above (J_hom2eucl and du_dDeltaK), how do the euclidean image positions change when the internal calibration is changed (the 3 update parameters)?
             // Remember to include the weight of the keypoint (kp.weight)
-            J.m_rows[rIdx].J_internalCalib = J_hom2eucl * du_dDeltaK * kp.weight;
-            
-            
+             J.m_rows[rIdx].J_internalCalib =(J_hom2eucl * du_dDeltaK) * kp.weight;
+
+
             // TO DO !!!
             // How do the euclidean image positions change when the tracks are moving in eye space/camera space (the vector "v" in the slides)?
             cv::Matx<float, 2, 4> J_v2eucl; // works like cv::Matx24f but the latter was not typedef-ed
@@ -882,7 +896,7 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
             dv_dDeltaH(2, 4) = 0;
             dv_dDeltaH(2, 5) = trackState.location[3];
 
-            
+
             // TO DO !!!
             // How do the euclidean image positions change when the external calibration is changed (the 6 update parameters)?
             // Remember to include the weight of the keypoint (kp.weight)
