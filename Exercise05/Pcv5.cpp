@@ -753,29 +753,46 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
     for (unsigned camIdx = 0; camIdx < m_cameras.size(); camIdx++) {
         const auto &calibState = m_internalCalibs[m_scene.cameras[camIdx].internalCalibIdx];
         const auto &cameraState = m_cameras[camIdx];
-        
+
         // TO DO !!!
         // Compute 3x4 camera matrix (composition of internal and external calibration)
         // Internal calibration is calibState.K
         // External calibration is dropLastRow(cameraState.H)
-        
-        cv::Matx34f P ;// = ...
-        
-        for (const KeyPoint &kp : m_scene.cameras[camIdx].keypoints) {
+
+      cv::Matx34f ext = cv::Mat_<float>(3,4);
+        ext(0,0) = cameraState.H(0,0);
+        ext(0,1) = cameraState.H(0,1);
+        ext(0,2) = cameraState.H(0,2);
+        ext(0,3) = cameraState.H(0,3);
+        ext(1,0) = cameraState.H(1,0);
+        ext(1,1) = cameraState.H(1,1);
+        ext(1,2) = cameraState.H(1,2);
+        ext(1,3) = cameraState.H(1,3);
+        ext(2,0) = cameraState.H(2,0);
+        ext(2,1) = cameraState.H(2,1);
+        ext(2,2) = cameraState.H(2,2);
+        ext(2,3) = cameraState.H(2,3);
+
+        cv::Matx34f P = calibState.K * ext;
+
+       for (const KeyPoint &kp : m_scene.cameras[camIdx].keypoints) {
             const auto &trackState = m_tracks[kp.trackIdx];
             // TO DO !!!
             // Using P, compute the homogeneous position of the track in the image (world space position is trackState.location)
-            cv::Vec3f projection ;// = ...
-            
+            cv::Vec3f projection = P * trackState.location;
+
             // TO DO !!!
             // Compute the euclidean position of the track
-            
+            cv::Vec3f euclProjection = (projection[0]/projection[3],
+                                        projection[1]/projection[3],
+                                        projection[2]/projection[3]);
+
             // TO DO !!!
             // Compute the residuals: the difference between computed position and real position (kp.location(0) and kp.location(1))
             // Compute and store the (signed!) residual in x direction multiplied by kp.weight
-            // residuals[rIdx++] = ...
+            residuals[rIdx++] = (kp.location(0) - euclProjection(0)) * kp.weight;
             // Compute and store the (signed!) residual in y direction multiplied by kp.weight
-            // residuals[rIdx++] = ...
+            residuals[rIdx++] = (kp.location(1) - euclProjection(1)) * kp.weight;
         }
     }
 }
@@ -783,107 +800,132 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
 void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
 {
     BAJacobiMatrix &J = dynamic_cast<BAJacobiMatrix&>(*dst);
-    
+
     unsigned rIdx = 0;
     for (unsigned camIdx = 0; camIdx < m_cameras.size(); camIdx++) {
         const auto &calibState = m_internalCalibs[m_scene.cameras[camIdx].internalCalibIdx];
         const auto &cameraState = m_cameras[camIdx];
-        
+
         for (const KeyPoint &kp : m_scene.cameras[camIdx].keypoints) {
             const auto &trackState = m_tracks[kp.trackIdx];
-            
+
             // calibState.K is the internal calbration
             // cameraState.H is the external calbration
             // trackState.location is the 3D location of the track in homogeneous coordinates
+                cv::Matx34f ext3d = cv::Mat_<float>(3,4);
+        ext3d(0,0) = cameraState.H(0,0);
+        ext3d(0,1) = cameraState.H(0,1);
+        ext3d(0,2) = cameraState.H(0,2);
+        ext3d(0,3) = cameraState.H(0,3);
+        ext3d(1,0) = cameraState.H(1,0);
+        ext3d(1,1) = cameraState.H(1,1);
+        ext3d(1,2) = cameraState.H(1,2);
+        ext3d(1,3) = cameraState.H(1,3);
+        ext3d(2,0) = cameraState.H(2,0);
+        ext3d(2,1) = cameraState.H(2,1);
+        ext3d(2,2) = cameraState.H(2,2);
+        ext3d(2,3) = cameraState.H(2,3);
+
 
             // TO DO !!!
             // Compute the positions before and after the internal calibration (compare to slides).
 
-            cv::Vec3f v ;// = ...
-            cv::Vec3f u ;// = ...
-            
+            cv::Vec3f v= ext3d * trackState.location;
+            cv::Vec3f u=calibState.K * v ;// = ...
+
             cv::Matx23f J_hom2eucl;
             // TO DO !!!
             // How do the euclidean image positions change when the homogeneous image positions change?
-            /*
-            J_hom2eucl(0, 0) = ...
-            J_hom2eucl(0, 1) = ...
-            J_hom2eucl(0, 2) = ...
-            J_hom2eucl(1, 0) = ...
-            J_hom2eucl(1, 1) = ...
-            J_hom2eucl(1, 2) = ...
-            */
-            
+
+            J_hom2eucl(0, 0) = 1/u[2];
+            J_hom2eucl(0, 1) = 0;
+            J_hom2eucl(0, 2) = -(u[0]/pow(u[2],2));
+            J_hom2eucl(1, 0) = 0;
+            J_hom2eucl(1, 1) = 1/u[2];
+            J_hom2eucl(1, 2) = -(u[1]/pow(u[2],2));
+
+
             cv::Matx33f du_dDeltaK;
-            /*
+
             // TO DO !!!
             // How do homogeneous image positions change when the internal calibration is changed (the 3 update parameters)?
-            du_dDeltaK(0, 0) = ...
-            du_dDeltaK(0, 1) = ...
-            du_dDeltaK(0, 2) = ...
-            du_dDeltaK(1, 0) = ...
-            du_dDeltaK(1, 1) = ...
-            du_dDeltaK(1, 2) = ...
-            du_dDeltaK(2, 0) = ...
-            du_dDeltaK(2, 1) = ...
-            du_dDeltaK(2, 2) = ...
-            */
-            
-            
+            du_dDeltaK(0, 0) = v[0]*calibState.K(0,0);
+            du_dDeltaK(0, 1) = v[2]*calibState.K(0,2);
+            du_dDeltaK(0, 2) = 0;
+            du_dDeltaK(1, 0) = v[1]*calibState.K(1,1);
+            du_dDeltaK(1, 1) = 0;
+            du_dDeltaK(1, 2) = v[2]*calibState.K(1,2);
+            du_dDeltaK(2, 0) = 0;
+            du_dDeltaK(2, 1) = 0;
+            du_dDeltaK(2, 2) = 0;
+
+
+
             // TO DO !!!
             // Using the above (J_hom2eucl and du_dDeltaK), how do the euclidean image positions change when the internal calibration is changed (the 3 update parameters)?
             // Remember to include the weight of the keypoint (kp.weight)
-            // J.m_rows[rIdx].J_internalCalib = 
-            
-            
+             J.m_rows[rIdx].J_internalCalib =(J_hom2eucl * du_dDeltaK) * kp.weight;
+
+
             // TO DO !!!
             // How do the euclidean image positions change when the tracks are moving in eye space/camera space (the vector "v" in the slides)?
             cv::Matx<float, 2, 4> J_v2eucl; // works like cv::Matx24f but the latter was not typedef-ed
-            
-            
+            J_v2eucl(0,0) = 1/v[3];
+            J_v2eucl(0,1) = 0;
+            J_v2eucl(0,2) = 0;
+            J_v2eucl(0,3) = v[1]/pow(v[3],2);
+            J_v2eucl(1,0) = 0;
+            J_v2eucl(1,1) = 1/v[3];
+            J_v2eucl(1,2) = 0;
+            J_v2eucl(1,3) = v[2]/pow(v[3],2);
+            J_v2eucl(2,0) = 0;
+            J_v2eucl(2,1) = 0;
+            J_v2eucl(2,2) = 1/v[3];
+            J_v2eucl(2,3) = v[3]/(pow(v[3],2));
+
             //cv::Matx36f dv_dDeltaH;
             cv::Matx<float, 3, 6> dv_dDeltaH; // works like cv::Matx36f but the latter was not typedef-ed
-            
+
             // TO DO !!!
             // How do tracks move in eye space (vector "v" in slides) when the parameters of the camera are changed?
-            /*
-            dv_dDeltaH(0, 0) = ...
-            dv_dDeltaH(0, 1) = ...
-            dv_dDeltaH(0, 2) = ...
-            dv_dDeltaH(0, 3) = ...
-            dv_dDeltaH(0, 4) = ...
-            dv_dDeltaH(0, 5) = ...
-            dv_dDeltaH(1, 0) = ...
-            dv_dDeltaH(1, 1) = ...
-            dv_dDeltaH(1, 2) = ...
-            dv_dDeltaH(1, 3) = ...
-            dv_dDeltaH(1, 4) = ...
-            dv_dDeltaH(1, 5) = ...
-            dv_dDeltaH(2, 0) = ...
-            dv_dDeltaH(2, 1) = ...
-            dv_dDeltaH(2, 2) = ...
-            dv_dDeltaH(2, 3) = ...
-            dv_dDeltaH(2, 4) = ...
-            dv_dDeltaH(2, 5) = ...
-            */
-            
+
+            dv_dDeltaH(0, 0) = 0;
+            dv_dDeltaH(0, 1) = v[2];
+            dv_dDeltaH(0, 2) = -v[1];
+            dv_dDeltaH(0, 3) = trackState.location[3];
+            dv_dDeltaH(0, 4) = 0;
+            dv_dDeltaH(0, 5) = 0;
+            dv_dDeltaH(1, 0) = -v[2];
+            dv_dDeltaH(1, 1) = 0;
+            dv_dDeltaH(1, 2) = v[0];
+            dv_dDeltaH(1, 3) = 0;
+            dv_dDeltaH(1, 4) = trackState.location[3];
+            dv_dDeltaH(1, 5) = 0;
+            dv_dDeltaH(2, 0) = v[1];
+            dv_dDeltaH(2, 1) = -v[0];
+            dv_dDeltaH(2, 2) = 0;
+            dv_dDeltaH(2, 3) = 0;
+            dv_dDeltaH(2, 4) = 0;
+            dv_dDeltaH(2, 5) = trackState.location[3];
+
+
             // TO DO !!!
             // How do the euclidean image positions change when the external calibration is changed (the 6 update parameters)?
             // Remember to include the weight of the keypoint (kp.weight)
-            // J.m_rows[rIdx].J_camera = 
-            
-            
+       Stuck here-->  J.m_rows[rIdx].J_camera =(dv_dDeltaH * J_v2eucl)*kp.weight;
+
+
             // TO DO !!!
             // How do the euclidean image positions change when the tracks are moving in world space (the x, y, z, and w before the external calibration)?
             // The multiplication operator "*" works as one would suspect. You can use dropLastRow(...) to drop the last row of a matrix.
-            // cv::Matx<float, 2, 4> J_worldSpace2eucl =
-            
-            
+               cv::Matx<float, 2, 4> J_worldSpace2eucl = J_hom2eucl * calibState.K * ext3d;
+
+
             // TO DO !!!
-            // How do the euclidean image positions change when the tracks are changed. 
+            // How do the euclidean image positions change when the tracks are changed.
             // This is the same as above, except it should also include the weight of the keypoint (kp.weight)
-            // J.m_rows[rIdx].J_track = 
-            
+               J.m_rows[rIdx].J_track = J_worldSpace2eucl * kp.weight;
+
             rIdx++;
         }
     }
