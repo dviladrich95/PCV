@@ -781,13 +781,12 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
             // TO DO !!!
             // Using P, compute the homogeneous position of the track in the image (world space position is trackState.location)
             cv::Vec3f projection = P * trackState.location;
+            //cout<< projection << endl;
 
             // TO DO !!!
             // Compute the euclidean position of the track
-
-            cv::Vec3f euclProjection = (projection[0]/projection[3],
-                                        projection[1]/projection[3],
-                                        projection[2]/projection[3]);
+            cv::Vec2f euclProjection = (projection[0]/projection[2],
+                                        projection[1]/projection[2]);
 
             // TO DO !!!
             // Compute the residuals: the difference between computed position and real position (kp.location(0) and kp.location(1))
@@ -864,7 +863,7 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
             // TO DO !!!
             // Using the above (J_hom2eucl and du_dDeltaK), how do the euclidean image positions change when the internal calibration is changed (the 3 update parameters)?
             // Remember to include the weight of the keypoint (kp.weight)
-             J.m_rows[rIdx].J_internalCalib =(J_hom2eucl * du_dDeltaK) * kp.weight;
+             J.m_rows[rIdx].J_internalCalib = (J_hom2eucl * du_dDeltaK) * kp.weight;
 
 
             // TO DO !!!
@@ -967,8 +966,8 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         */
 
         state.m_cameras[i].H = rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
-                               rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
-                               rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
+                               rotationMatrixY(update[cameraOffset + i * NumUpdateParams::CAMERA + 1])*
+                               rotationMatrixZ(update[cameraOffset + i * NumUpdateParams::CAMERA + 2])*
                                translationMatrix(update[cameraOffset + i * NumUpdateParams::CAMERA + 3], update[cameraOffset + i * NumUpdateParams::CAMERA + 4], update[cameraOffset + i * NumUpdateParams::CAMERA + 5])*
                                m_cameras[i].H;
 
