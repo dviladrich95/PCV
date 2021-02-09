@@ -767,8 +767,8 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
         ext(0,3) = cameraState.H(0,3);
         ext(1,0) = cameraState.H(1,0);
         ext(1,1) = cameraState.H(1,1);
-        ext(1,1) = cameraState.H(1,2);
-        ext(1,1) = cameraState.H(1,3);
+        ext(1,2) = cameraState.H(1,2);
+        ext(1,3) = cameraState.H(1,3);
         ext(2,0) = cameraState.H(2,0);
         ext(2,1) = cameraState.H(2,1);
         ext(2,2) = cameraState.H(2,2);
@@ -784,6 +784,7 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
 
             // TO DO !!!
             // Compute the euclidean position of the track
+
             cv::Vec3f euclProjection = (projection[0]/projection[3],
                                         projection[1]/projection[3],
                                         projection[2]/projection[3]);
@@ -823,8 +824,8 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
             ext(0,3) = cameraState.H(0,3);
             ext(1,0) = cameraState.H(1,0);
             ext(1,1) = cameraState.H(1,1);
-            ext(1,1) = cameraState.H(1,2);
-            ext(1,1) = cameraState.H(1,3);
+            ext(1,2) = cameraState.H(1,2);
+            ext(1,3) = cameraState.H(1,3);
             ext(2,0) = cameraState.H(2,0);
             ext(2,1) = cameraState.H(2,1);
             ext(2,2) = cameraState.H(2,2);
@@ -970,14 +971,6 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
                                rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
                                translationMatrix(update[cameraOffset + i * NumUpdateParams::CAMERA + 3], update[cameraOffset + i * NumUpdateParams::CAMERA + 4], update[cameraOffset + i * NumUpdateParams::CAMERA + 5])*
                                m_cameras[i].H;
-
-        /*
-        state.m_cameras[i].H = rotationMatrixX(state.m_cameras[i].H(0,0))*
-                               rotationMatrixY(state.m_cameras[i].H(1,1))*
-                               rotationMatrixZ(state.m_cameras[i].H(2,2))*
-                               translationMatrix(state.m_cameras[i].H(0,2),state.m_cameras[i].H(1,2),state.m_cameras[i].H(2,2))*
-                               m_cameras[i].H;
-        */
 
     }
     unsigned trackOffset = cameraOffset + m_cameras.size() * NumUpdateParams::CAMERA;
