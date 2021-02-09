@@ -940,6 +940,11 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         * update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 1] is how much the principal point is supposed to shift in x direction (scaled by the old x position of the principal point)
         * update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 2] is how much the principal point is supposed to shift in y direction (scaled by the old y position of the principal point)
         */
+        state.m_internalCalibs[i].K(0,0) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
+        state.m_internalCalibs[i].K(1,1) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
+        state.m_internalCalibs[i].K(0,2) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 1]);
+        state.m_internalCalibs[i].K(1,2) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 2]);
+
     }
     unsigned cameraOffset = intCalibOffset + m_internalCalibs.size() * NumUpdateParams::INTERNAL_CALIB;
     for (unsigned i = 0; i < m_cameras.size(); i++) {
@@ -960,7 +965,22 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         * 
         */
 
-        //state.m_cameras[i].H = ...
+        state.m_cameras[i].H = m_cameras[i].H;
+
+
+        state.m_cameras[i].H(0,0) += update[cameraOffset + i * NumUpdateParams::CAMERA + 0];
+        state.m_cameras[i].H(1,1) += update[cameraOffset + i * NumUpdateParams::CAMERA + 1];
+        state.m_cameras[i].H(2,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 2];
+        state.m_cameras[i].H(0,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 3];
+        state.m_cameras[i].H(1,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 4];
+        state.m_cameras[i].H(2,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 5];
+
+        state.m_cameras[i].H = rotationMatrixX(state.m_cameras[i].H(0,0))*
+                               rotationMatrixY(state.m_cameras[i].H(1,1))*
+                               rotationMatrixZ(state.m_cameras[i].H(2,2))*
+                               translationMatrix(state.m_cameras[i].H(0,2),state.m_cameras[i].H(1,2),state.m_cameras[i].H(2,2))*
+                               m_cameras[i].H;
+
     }
     unsigned trackOffset = cameraOffset + m_cameras.size() * NumUpdateParams::CAMERA;
     for (unsigned i = 0; i < m_tracks.size(); i++) {
@@ -979,11 +999,10 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         */
         
         
-        //state.m_tracks[i].location(0) += ...
-        //state.m_tracks[i].location(1) += ...
-        //state.m_tracks[i].location(2) += ...
-        //state.m_tracks[i].location(3) += ...
-
+        state.m_tracks[i].location(0) += update[trackOffset + i * NumUpdateParams::TRACK + 0];
+        state.m_tracks[i].location(1) += update[trackOffset + i * NumUpdateParams::TRACK + 1];
+        state.m_tracks[i].location(2) += update[trackOffset + i * NumUpdateParams::TRACK + 2];
+        state.m_tracks[i].location(3) += update[trackOffset + i * NumUpdateParams::TRACK + 3];
 
         // Renormalization to length one
         float len = std::sqrt(state.m_tracks[i].location.dot(state.m_tracks[i].location));
