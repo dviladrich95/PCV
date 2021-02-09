@@ -965,21 +965,19 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         * 
         */
 
-        state.m_cameras[i].H = m_cameras[i].H;
+        state.m_cameras[i].H = rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
+                               rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
+                               rotationMatrixX(update[cameraOffset + i * NumUpdateParams::CAMERA + 0])*
+                               translationMatrix(update[cameraOffset + i * NumUpdateParams::CAMERA + 3], update[cameraOffset + i * NumUpdateParams::CAMERA + 4], update[cameraOffset + i * NumUpdateParams::CAMERA + 5])*
+                               m_cameras[i].H;
 
-
-        state.m_cameras[i].H(0,0) += update[cameraOffset + i * NumUpdateParams::CAMERA + 0];
-        state.m_cameras[i].H(1,1) += update[cameraOffset + i * NumUpdateParams::CAMERA + 1];
-        state.m_cameras[i].H(2,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 2];
-        state.m_cameras[i].H(0,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 3];
-        state.m_cameras[i].H(1,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 4];
-        state.m_cameras[i].H(2,2) += update[cameraOffset + i * NumUpdateParams::CAMERA + 5];
-
+        /*
         state.m_cameras[i].H = rotationMatrixX(state.m_cameras[i].H(0,0))*
                                rotationMatrixY(state.m_cameras[i].H(1,1))*
                                rotationMatrixZ(state.m_cameras[i].H(2,2))*
                                translationMatrix(state.m_cameras[i].H(0,2),state.m_cameras[i].H(1,2),state.m_cameras[i].H(2,2))*
                                m_cameras[i].H;
+        */
 
     }
     unsigned trackOffset = cameraOffset + m_cameras.size() * NumUpdateParams::CAMERA;
