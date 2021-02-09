@@ -108,12 +108,12 @@ cv::Matx44f getCondition3D(const std::vector<cv::Vec4f>& points3D)
 {
     cv::Vec3f sum_points(0.0,0.0,0.0);
     cv::Vec3f mean_point(0.0,0.0,0.0);
-    double sum_sx=0.0;
-    double sum_sy=0.0;
-    double sum_sz=0.0;
-    double sx=0.0;
-    double sy=0.0;
-    double sz=0.0;
+    float sum_sx=0.0;
+    float sum_sy=0.0;
+    float sum_sz=0.0;
+    float sx=0.0;
+    float sy=0.0;
+    float sz=0.0;
 
     for(const auto & point : points3D){
         cv::Vec3f point_eucl=cv::Vec3f(point[0]/point[3],
@@ -233,7 +233,6 @@ cv::Matx34f calibrate(const std::vector<cv::Vec3f>& points2D, const std::vector<
     std::vector<cv::Vec3f>(c_P2D);
     std::vector<cv::Vec4f>(c_P3D);
 
-
     cv::Matx33f P2D = getCondition2D(points2D);
     cv::Matx44f P3D = getCondition3D(points3D);
 
@@ -309,7 +308,6 @@ void interprete(const cv::Matx34f &P, cv::Matx33f &K, cv::Matx33f &R, Projection
 
     cv::Matx31f C_norm = cv::Matx31f(C[0][0]/C[0][3], C[0][1]/C[0][3], C[0][2]/C[0][3]);
     std::cout << C_norm << std::endl;
-
 
 
     // Principal distance or focal length
@@ -449,7 +447,7 @@ cv::Matx33f decondition_fundamental(const cv::Matx33f& T1, const cv::Matx33f& T2
 cv::Matx33f getFundamentalMatrix(const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& p2)
 {
     // TO DO !!!
-  cv::Matx33f p1_cond = getCondition2D(p1);
+    cv::Matx33f p1_cond = getCondition2D(p1);
     cv::Matx33f p2_cond = getCondition2D(p2);
 
     std::vector<cv::Vec3f> c_p1;
@@ -597,15 +595,15 @@ cv::Matx33f estimateFundamentalRANSAC(const std::vector<cv::Vec3f>& p1, const st
 cv::Matx44f computeCameraPose(const cv::Matx33f &K, const std::vector<cv::Vec3f>& p1, const std::vector<cv::Vec3f>& px2)
 {
 
-cv::Matx33f F=getFundamentalMatrix(p1,px2);
+    cv::Matx33f F=getFundamentalMatrix(p1,px2);
 
-cv::Matx33f ES= K.t() *F *K;
+    cv::Matx33f ES= K.t() *F *K;
     
-cv::Matx33f R1,R2;
-cv::Matx31f t;
-cv::decomposeEssentialMat(ES,R1,R2,t);
+    cv::Matx33f R1,R2;
+    cv::Matx31f t;
+    cv::decomposeEssentialMat(ES,R1,R2,t);
 
-cv::Mat_<float> EX = cv::Mat_<float>::zeros(4,4);
+    cv::Mat_<float> EX = cv::Mat_<float>::zeros(4,4);
     EX.at<float>(0,0) = R1(0,0);
     EX.at<float>(0,1) = R1(0,1);
     EX.at<float>(0,2) = R1(0,2);
@@ -760,6 +758,11 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
         // Internal calibration is calibState.K
         // External calibration is dropLastRow(cameraState.H)
 
+        cv::Matx34f ext(cameraState.H(0,0),cameraState.H(0,1),cameraState.H(0,2), cameraState.H(0,3),
+                        cameraState.H(1,0),cameraState.H(1,1),cameraState.H(1,2), cameraState.H(1,3),
+                        cameraState.H(2,0),cameraState.H(2,1),cameraState.H(2,2), cameraState.H(2,3));
+
+        /*
         cv::Matx34f ext = cv::Mat_<float>(3,4);
         ext(0,0) = cameraState.H(0,0);
         ext(0,1) = cameraState.H(0,1);
@@ -773,6 +776,7 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
         ext(2,1) = cameraState.H(2,1);
         ext(2,2) = cameraState.H(2,2);
         ext(2,3) = cameraState.H(2,3);
+        */
 
         cv::Matx34f P = calibState.K * ext;
 
@@ -785,8 +789,7 @@ void BundleAdjustment::BAState::computeResiduals(float *residuals) const
 
             // TO DO !!!
             // Compute the euclidean position of the track
-            cv::Vec2f euclProjection = (projection[0]/projection[2],
-                                        projection[1]/projection[2]);
+            cv::Vec2f euclProjection(projection[0]/projection[2],projection[1]/projection[2]);
 
             // TO DO !!!
             // Compute the residuals: the difference between computed position and real position (kp.location(0) and kp.location(1))
@@ -816,6 +819,11 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
 
             // TO DO !!!
             // Compute the positions before and after the internal calibration (compare to slides).
+            cv::Matx34f ext(cameraState.H(0,0),cameraState.H(0,1),cameraState.H(0,2), cameraState.H(0,3),
+                            cameraState.H(1,0),cameraState.H(1,1),cameraState.H(1,2), cameraState.H(1,3),
+                            cameraState.H(2,0),cameraState.H(2,1),cameraState.H(2,2), cameraState.H(2,3));
+
+            /*
             cv::Matx34f ext = cv::Mat_<float>(3,4);
             ext(0,0) = cameraState.H(0,0);
             ext(0,1) = cameraState.H(0,1);
@@ -829,6 +837,7 @@ void BundleAdjustment::BAState::computeJacobiMatrix(JacobiMatrix *dst) const
             ext(2,1) = cameraState.H(2,1);
             ext(2,2) = cameraState.H(2,2);
             ext(2,3) = cameraState.H(2,3);
+            */
 
             cv::Vec3f v = ext * trackState.location;
             cv::Vec3f u = calibState.K * v;
@@ -940,10 +949,10 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         * update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 1] is how much the principal point is supposed to shift in x direction (scaled by the old x position of the principal point)
         * update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 2] is how much the principal point is supposed to shift in y direction (scaled by the old y position of the principal point)
         */
-        state.m_internalCalibs[i].K(0,0) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
-        state.m_internalCalibs[i].K(1,1) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
-        state.m_internalCalibs[i].K(0,2) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 1]);
-        state.m_internalCalibs[i].K(1,2) += (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 2]);
+        state.m_internalCalibs[i].K(0,0) *= (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
+        state.m_internalCalibs[i].K(1,1) *= (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 0]);
+        state.m_internalCalibs[i].K(0,2) *= (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 1]);
+        state.m_internalCalibs[i].K(1,2) *= (1 + update[intCalibOffset + i * NumUpdateParams::INTERNAL_CALIB + 2]);
 
     }
     unsigned cameraOffset = intCalibOffset + m_internalCalibs.size() * NumUpdateParams::INTERNAL_CALIB;
@@ -987,8 +996,7 @@ void BundleAdjustment::BAState::update(const float *update, State *dst) const
         * update[trackOffset + i * NumUpdateParams::TRACK + 2] increment of Z
         * update[trackOffset + i * NumUpdateParams::TRACK + 3] increment of W
         */
-        
-        
+
         state.m_tracks[i].location(0) += update[trackOffset + i * NumUpdateParams::TRACK + 0];
         state.m_tracks[i].location(1) += update[trackOffset + i * NumUpdateParams::TRACK + 1];
         state.m_tracks[i].location(2) += update[trackOffset + i * NumUpdateParams::TRACK + 2];
